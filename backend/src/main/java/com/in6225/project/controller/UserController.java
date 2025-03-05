@@ -39,17 +39,20 @@ public class UserController {
     @PostMapping
     public ResponseEntity<User> addUser(@RequestBody User user) {
         /// TODO: generate the ID
+
         return ResponseEntity.status(HttpStatus.CREATED).body(user);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Map<String, String>> deleteUser(@PathVariable String id) {
+        userService.deleteUser(id);
         return ResponseEntity.ok(new HashMap<>());
     }
 
 
     @PutMapping
-    public ResponseEntity<Map<String, String>> updateUser(@RequestBody User employee) {
+    public ResponseEntity<Map<String, String>> updateUser(@RequestBody User user) {
+        userService.updateUser(user);
         Map<String, String> response = new HashMap<>();
         response.put("message", "Employee updated successfully");
         return ResponseEntity.ok(response);
