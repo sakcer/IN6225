@@ -1,6 +1,6 @@
 package com.in6225.project.controller;
 
-import com.in6225.project.model.entity.LoginRequest;
+import com.in6225.project.dto.LoginRequest;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/v1/auth")
 public class AuthController {
 
     @PostMapping("/login")

@@ -1,4 +1,4 @@
-package com.in6225.project.model.entity;
+package com.in6225.project.dto;
 
 import lombok.Data;
 

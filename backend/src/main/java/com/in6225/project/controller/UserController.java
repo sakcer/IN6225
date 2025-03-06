@@ -1,6 +1,6 @@
 package com.in6225.project.controller;
 
-import com.in6225.project.model.entity.User;
+import com.in6225.project.entity.User;
 import com.in6225.project.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,42 +20,39 @@ public class UserController {
     private UserService userService;
 
     @GetMapping("/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable String id) {
+    public ResponseEntity<User> getUserById(@PathVariable Long id) {
         Optional<User> user = userService.getUserById(id);
         return user.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
     @GetMapping("/all")
     public ResponseEntity<Map<String, Object>> getAllUsers() {
-        Optional<List<User>> users = userService.getAllUsers();
+        List<User> users = userService.getAllUsers();
 
         Map<String, Object> response = new HashMap<>();
-        response.put("users", users.get());
-        response.put("total", users.get().size());
+        response.put("users", users);
+        response.put("total", users.size());
 
         return ResponseEntity.ok(response);
     }
 
     @PostMapping
     public ResponseEntity<User> addUser(@RequestBody User user) {
-        /// TODO: generate the ID
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(user);
+        return ResponseEntity.status(HttpStatus.CREATED).body(userService.addUser(user));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Map<String, String>> deleteUser(@PathVariable String id) {
+    public ResponseEntity<Map<String, String>> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
-        return ResponseEntity.ok(new HashMap<>());
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Delete OK");
+        return ResponseEntity.ok(response);
     }
 
 
     @PutMapping
-    public ResponseEntity<Map<String, String>> updateUser(@RequestBody User user) {
-        userService.updateUser(user);
-        Map<String, String> response = new HashMap<>();
-        response.put("message", "Employee updated successfully");
-        return ResponseEntity.ok(response);
+    public ResponseEntity<User> updateUser(@RequestBody User user) {
+        return ResponseEntity.ok(userService.updateUser(user));
     }
 
 }
