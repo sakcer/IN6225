@@ -33,7 +33,10 @@ public class SecurityConfig {
     @Autowired
     private UserDetailsServiceImpl userDetailsServiceImpl; // 用户服务
 
-    private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(); // 密码编码器
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return NoOpPasswordEncoder.getInstance();  // 设置默认的 NoOpPasswordEncoder
+    }
 
     @Bean
     public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
