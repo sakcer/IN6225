@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {
@@ -28,9 +29,18 @@ public class UserDetailsServiceImpl implements UserDetailsService {
             throw new UsernameNotFoundException("User not found with username: " + employeeId);
         }
 
-        // 获取用户角色
-        List<GrantedAuthority> authorities = Arrays.asList(new SimpleGrantedAuthority("ROLE_USER"));
+        return new CustomUserDetails(user);
 
-        // 返回 UserDetails 对象
-        return new org.springframework.security.core.userdetails.User(user.getEmployeeId(), user.getPassword(), authorities);
-    }}
+//        List<GrantedAuthority> authorities = user.getRoles().stream()
+//                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getRole()))
+//                .collect(Collectors.toList());
+//
+//        // 返回 UserDetails 对象
+//        return new org.springframework.security.core.userdetails.User(
+//                user.getEmployeeId(),
+//                user.getPassword(),
+//                authorities
+//        );
+
+    }
+}
