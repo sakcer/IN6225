@@ -1,34 +1,17 @@
 <template>
   <el-container class="layout-container">
     <el-aside width="200px">
-      <el-menu
-        :router="true"
-        class="h-full"
-        default-active="/"
-      >
-        <el-menu-item index="/">
-          <el-icon><Monitor /></el-icon>
-          <span>仪表盘</span>
-        </el-menu-item>
-        <el-menu-item index="/employees">
-          <el-icon><User /></el-icon>
-          <span>员工管理</span>
-        </el-menu-item>
-        <el-menu-item index="/departments">
-          <el-icon><OfficeBuilding /></el-icon>
-          <span>部门管理</span>
-        </el-menu-item>
-        <el-menu-item index="/projects">
-          <el-icon><Folder /></el-icon>
-          <span>项目管理</span>
-        </el-menu-item>
-        <el-menu-item index="/profile">
-          <el-icon><User /></el-icon>
-          <span>个人信息</span>
+      <el-menu :router="true" class="h-full" default-active="/">
+
+        <el-menu-item v-for="route in routes" :key="route.path" :index="route.path">
+          <el-icon>
+            <component :is="route.meta.icon" />
+          </el-icon>
+          <span>{{ route.meta.title }}</span>
         </el-menu-item>
       </el-menu>
     </el-aside>
-    
+
     <el-container>
       <el-header>
         <div class="flex justify-between items-center h-full">
@@ -48,7 +31,7 @@
           </el-dropdown>
         </div>
       </el-header>
-      
+
       <el-main>
         <router-view></router-view>
       </el-main>
@@ -57,7 +40,11 @@
 </template>
 
 <script setup lang="ts">
-import { Monitor, User, OfficeBuilding , Folder } from '@element-plus/icons-vue'
+import { Monitor, User, Folder, OfficeBuilding } from '@element-plus/icons-vue'
+import { adminRoutes } from '@/router/index'
+
+const routes = adminRoutes[0].children
+
 </script>
 
 <style scoped>

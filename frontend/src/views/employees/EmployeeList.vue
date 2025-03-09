@@ -1,127 +1,91 @@
+<script setup lang="ts">
+import { onMounted } from 'vue';
+import { Edit, Delete } from '@element-plus/icons-vue';
+import StatisticsCards from '@/components/StatisticsCards.vue';
+import ToolBar from './widgets/ToolBar.vue';
+import EmployeeCards from './widgets/EmployeeCards.vue';
+import Pagination from './widgets/Pagination.vue';
+import EmployeeForm from './widgets/EmployeeForm.vue';
+import Breadcrumb from '@/components/Breadcrumb.vue';
+import AddButton from '@/components/AddButton.vue';
+import SearchInput from '@/components/SearchInput.vue';
+import StatusToggle from '@/components/StatusToggle.vue';
+
+import { useEmployees } from './composables/useEmployees';
+import { getAvatarColor, getAvatarText } from '@/utils/avatar';
+
+const {
+  // 状态
+  form,
+  isEdit,
+  status,
+  loading,
+  statistics,
+  searchQuery,
+  filteredUsers,
+  dialogVisible,
+  pagination,
+
+  // 方法
+  updateUsers,
+  handleAddUser,
+  handleEdit,
+  handleDelete,
+  handleSubmit,
+  handleSearch,
+  handleCurrentChange,
+  handleSizeChange,
+} = useEmployees()
+
+onMounted(() => {
+  updateUsers();
+});
+</script>
+
 <template>
   <div class="employee-list">
-    <div class="mb-4 flex justify-between items-center">
-      <div class="flex gap-4">
-        <el-input
-          v-model="searchQuery"
-          placeholder="搜索员工姓名"
-          class="w-64"
-          clearable
-          @input="handleSearch"
-        >
-          <template #prefix>
-            <el-icon><Search /></el-icon>
-          </template>
-        </el-input>
-        <el-select v-model="departmentFilter" placeholder="选择部门" clearable @change="handleSearch">
-          <el-option
-            v-for="dept in departments"
-            :key="dept.id"
-            :label="dept.name"
-            :value="dept.id"
-          />
-        </el-select>
+    <!-- 面包屑导航 -->
+    <div class="flex items-center mb-4">
+      <Breadcrumb label="Users" />
+    </div>
+
+    <h1 class="text-3xl font-bold mb-6">Users Panel</h1>
+
+    <!-- 统计卡片 -->
+    <statistics-cards :data="statistics" />
+
+    <!-- 操作栏 -->
+    <el-card shadow="hover" class="mb-6">
+
+      <!-- 工具栏 -->
+      <div class="w-full mb-6">
+        <div class="flex items-center mb-4">
+          <status-toggle v-model="status" @search="handleSearch" />
+          <div class="flex-grow ml-4">
+            <search-input v-model="searchQuery" placeholder="Search" @search="handleSearch" />
+          </div>
+        </div>
+        <div class="flex justify-end">
+          <add-button button-text="Add User" @add="handleAddUser" />
+        </div>
       </div>
-      <el-button type="primary" @click="$router.push('/employees/add')">
-        <el-icon><Plus /></el-icon>添加员工
-      </el-button>
-    </div>
 
-    <el-table :data="employees" border>
-      <el-table-column prop="id" label="ID" width="80" />
-      <el-table-column prop="name" label="姓名" />
-      <el-table-column prop="department" label="部门" />
-      <el-table-column prop="position" label="职位" />
-      <el-table-column prop="email" label="邮箱" />
-      <el-table-column prop="phone" label="电话" />
-      <el-table-column prop="joinDate" label="入职日期" />
-      <el-table-column label="操作" width="200">
-        <template #default="{ row }">
-          <el-button-group>
-            <el-button type="primary" @click="$router.push(`/employees/edit/${row.id}`)">
-              编辑
-            </el-button>
-            <el-button type="danger" @click="handleDelete(row)">
-              删除
-            </el-button>
-          </el-button-group>
-        </template>
-      </el-table-column>
-    </el-table>
+      <!-- 用户列表 -->
+      <employee-cards :filtered-users="filteredUsers" :loading="loading" :get-avatar-color="getAvatarColor"
+        :get-avatar-text="getAvatarText" :handle-edit="handleEdit" :handle-delete="handleDelete" />
 
-    <div class="mt-4 flex justify-end">
-      <el-pagination
-        v-model:current-page="currentPage"
-        v-model:page-size="pageSize"
-        :total="total"
-        :page-sizes="[10, 20, 50, 100]"
-        layout="total, sizes, prev, pager, next"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-      />
-    </div>
+      <!-- 分页 -->
+      <pagination v-model:current-page="pagination.currentPage" v-model:page-size="pagination.pageSize"
+        :total="pagination.total" @update:current-page="handleCurrentChange" @update:page-size="handleSizeChange" />
+    </el-card>
+
+    <!-- 添加/编辑用户对话框 -->
+    <employee-form v-model="dialogVisible" :is-edit="isEdit" :form="form" @submit="handleSubmit" />
   </div>
 </template>
 
-<script setup lang="ts">
-import { ref } from 'vue'
-import { Search, Plus } from '@element-plus/icons-vue'
-import { ElMessageBox, ElMessage } from 'element-plus'
-
-// 模拟数据
-const departments = ref([
-  { id: 1, name: '技术部' },
-  { id: 2, name: '人事部' },
-  { id: 3, name: '财务部' },
-])
-
-const employees = ref([
-  {
-    id: 1,
-    name: '张三',
-    department: '技术部',
-    position: '前端开发工程师',
-    email: 'zhangsan@example.com',
-    phone: '13800138000',
-    joinDate: '2023-01-01',
-  },
-  // 更多员工数据...
-])
-
-const searchQuery = ref('')
-const departmentFilter = ref('')
-const currentPage = ref(1)
-const pageSize = ref(10)
-const total = ref(100)
-
-const handleSearch = () => {
-  // 实现搜索逻辑
+<style scoped>
+.employee-list {
+  padding: 24px;
 }
-
-const handleSizeChange = (val: number) => {
-  pageSize.value = val
-  // 重新加载数据
-}
-
-const handleCurrentChange = (val: number) => {
-  currentPage.value = val
-  // 重新加载数据
-}
-
-const handleDelete = (row: any) => {
-  ElMessageBox.confirm(
-    `确定要删除员工 ${row.name} 吗？`,
-    '警告',
-    {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning',
-    }
-  ).then(() => {
-    // 实现删除逻辑
-    ElMessage.success('删除成功')
-  }).catch(() => {
-    // 取消删除
-  })
-}
-</script> 
+</style>
