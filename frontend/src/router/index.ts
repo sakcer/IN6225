@@ -22,13 +22,13 @@ const adminRoutes = [
       {
         path: 'departments',
         name: 'DepartmentList',
-        component: () => import('@/views/common/DepartmentList.vue'),
+        component: () => import('@/views/departments/DepartmentList.vue'),
         meta: { title: '部门管理', icon: 'OfficeBuilding' }
       },
       {
         path: 'projects',
         name: 'ProjectList',
-        component: () => import('@/views/common/ProjectList.vue'),
+        component: () => import('@/views/projects/ProjectList.vue'),
         meta: { title: '项目管理', icon: 'Folder' }
       },
       {

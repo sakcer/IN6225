@@ -4,12 +4,21 @@ import { employeeService } from '@/services/employees/employeeService';
 import { USER_STATUS } from '@/utils/constants';
 import type { Employee, Statistic, PaginationConfig } from '@/utils/types';
 import { User, UserFilled, Promotion, TrendCharts } from '@element-plus/icons-vue';
+import { useUserStore } from '@/store/userStore';
 
 export function useEmployees() {
   // 状态管理
-  const users = ref<Employee[]>([]);
+  // const users = ref<Employee[]>([]);
+  const { users } = useUserStore();
+
   const filteredUsers = ref<Employee[]>([]);
-  const statistics = ref<Statistic[]>([]);
+  const statistics = ref<Statistic[]>([
+    { label: 'Total Users', icon: markRaw(User), value: 0, type: 'primary' },
+    { label: 'Active Users', icon: markRaw(UserFilled), value: 0, type: 'success' },
+    { label: 'New Users', icon: markRaw(Promotion), value: 0, type: 'warning' },
+    { label: 'Growth Rate', icon: markRaw(TrendCharts), value: 0, type: 'danger' },
+  ]);
+
   const pagination = ref<PaginationConfig>({ currentPage: 1, pageSize: 1, total: 0 });
   const loading = ref(false);
   const searchQuery = ref('');
@@ -44,6 +53,7 @@ export function useEmployees() {
         { label: 'New Users', value: employees.filter(u => u.status === 'new').length, icon: markRaw(Promotion), type: 'warning' },
         { label: 'Growth Rate', value: 0, icon: markRaw(TrendCharts), type: 'danger' }
       ];
+
       updateTotal(employees.length);
       filteredUsers.value = filterUsers(employees);
     } catch (error) {

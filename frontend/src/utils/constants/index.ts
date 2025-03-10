@@ -11,6 +11,12 @@ export const USER_STATUS = {
   INACTIVE: 'inactive'
 } as const;
 
+export const PROJECT_STATUS = {
+  ALL: 'all',
+  ACTIVE: 'active',
+  COMPLETED: 'completed'
+} as const;
+
 export const USER_ROLES = {
   OWNER: 'OWNER',
   ADMIN: 'ADMIN',

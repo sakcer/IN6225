@@ -11,6 +11,8 @@ import AddButton from '@/components/AddButton.vue';
 import SearchInput from '@/components/SearchInput.vue';
 import StatusToggle from '@/components/StatusToggle.vue';
 
+import { USER_STATUS } from '@/utils/constants';
+
 import { useEmployees } from './composables/useEmployees';
 import { getAvatarColor, getAvatarText } from '@/utils/avatar';
 
@@ -45,9 +47,7 @@ onMounted(() => {
 <template>
   <div class="employee-list">
     <!-- 面包屑导航 -->
-    <div class="flex items-center mb-4">
-      <Breadcrumb label="Users" />
-    </div>
+    <Breadcrumb label="Users" />
 
     <h1 class="text-3xl font-bold mb-6">Users Panel</h1>
 
@@ -60,7 +60,7 @@ onMounted(() => {
       <!-- 工具栏 -->
       <div class="w-full mb-6">
         <div class="flex items-center mb-4">
-          <status-toggle v-model="status" @search="handleSearch" />
+          <status-toggle v-model="status" :status="USER_STATUS" @search="handleSearch" />
           <div class="flex-grow ml-4">
             <search-input v-model="searchQuery" placeholder="Search" @search="handleSearch" />
           </div>
