@@ -104,7 +104,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { Project } from '@/types';  // 假设定义了Project类型
+import type { Project } from '@/utils/types';
 import { ElCard, ElTag, ElProgress, ElButtonGroup, ElButton, ElTooltip, ElAvatar, ElIcon } from 'element-plus';
 import { Edit, Delete, Calendar } from '@element-plus/icons-vue';
 import { getAvatarColor, getAvatarText } from '@/utils/avatar';

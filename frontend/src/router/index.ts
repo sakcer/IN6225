@@ -19,12 +19,12 @@ const adminRoutes = [
         component: () => import('@/views/employees/EmployeeList.vue'),
         meta: { title: '员工管理', icon: 'User' }
       },
-      {
-        path: 'departments',
-        name: 'DepartmentList',
-        component: () => import('@/views/departments/DepartmentList.vue'),
-        meta: { title: '部门管理', icon: 'OfficeBuilding' }
-      },
+    //   {
+    //     path: 'departments',
+    //     name: 'DepartmentList',
+    //     component: () => import('@/views/departments/DepartmentList.vue'),
+    //     meta: { title: '部门管理', icon: 'OfficeBuilding' }
+    //   },
       {
         path: 'projects',
         name: 'ProjectList',
@@ -34,7 +34,7 @@ const adminRoutes = [
       {
         path: 'profile',
         name: 'Profile',
-        component: () => import('@/views/common/Profile.vue'),
+        component: () => import('@/views/profile/Profile.vue'),
         meta: { title: '个人信息', icon: 'User' }
       }
     ]

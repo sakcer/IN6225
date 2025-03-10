@@ -1,26 +1,22 @@
 <template>
   <el-button-group>
     <el-button
-      :type="modelValue === USER_STATUS.ACTIVE ? 'primary' : 'default'"
-      @click="$emit('update:modelValue', USER_STATUS.ACTIVE); $emit('search')"
+      v-for="(label, key) in status"
+      :key="key"
+      :type="modelValue === label ? 'primary' : 'default'"
+      @click="$emit('update:modelValue', label); $emit('search')"
     >
-      Active
-    </el-button>
-    <el-button
-      :type="modelValue === USER_STATUS.INACTIVE ? 'primary' : 'default'"
-      @click="$emit('update:modelValue', USER_STATUS.INACTIVE); $emit('search')"
-    >
-      Inactive
+      {{ key }}
     </el-button>
   </el-button-group>
 </template>
 
 <script setup lang="ts">
-import { USER_STATUS } from '@/utils/constants';
+import { defineProps, defineEmits } from 'vue';
 
-// 接收父组件传递的值
 defineProps<{
   modelValue: string;
+  status: Record<string, string>;
 }>();
 
 defineEmits<{
