@@ -37,6 +37,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
         throws ServletException, IOException {
+
+        if (request.getRequestURI().contains("/api/v1/auth/*")) {
+            filterChain.doFilter(request, response); // 跳过该过滤器
+            return;
+        }
+
         String token = request.getHeader(TOKEN_NAME);
         if (token != null && token.startsWith("Bearer ")) {
             token = token.substring(7);
@@ -57,9 +63,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 return;
             }
         } else {
-            response.setStatus(HttpStatus.UNAUTHORIZED.value());
-            response.getWriter().write("Invalid or expired JWT token");
-            return;
+//            response.setStatus(HttpStatus.UNAUTHORIZED.value());
+//            response.getWriter().write("NO TOKEN");
+//            return;
         }
 
         filterChain.doFilter(request, response);

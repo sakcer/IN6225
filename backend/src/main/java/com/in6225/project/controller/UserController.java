@@ -1,5 +1,6 @@
 package com.in6225.project.controller;
 
+import com.in6225.project.dto.PasswordDTO;
 import com.in6225.project.entity.User;
 import com.in6225.project.security.CustomUserDetails;
 import com.in6225.project.service.UserService;
@@ -43,9 +44,11 @@ public class UserController {
     }
 
     @GetMapping("/all")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+//    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<Map<String, Object>> getAllUsers() {
+        System.out.println("XXXXXXXXX");
         List<User> users = userService.getAllUsers();
+        System.out.println("XXXXXXXXX");
 
         Map<String, Object> response = new HashMap<>();
         response.put("users", users);
@@ -55,25 +58,29 @@ public class UserController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+//    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<User> addUser(@RequestBody User user) {
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.addUser(user));
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+//    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<Map<String, String>> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
         Map<String, String> response = new HashMap<>();
-        response.put("message", "Delete OK");
+        response.put("message", "Delete " + id);
         return ResponseEntity.ok(response);
     }
 
 
     @PutMapping
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+//    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<User> updateUser(@RequestBody User user) {
         return ResponseEntity.ok(userService.updateUser(user));
     }
 
+    @PostMapping("password/{id}")
+    public ResponseEntity<User> updateUserPassword(@PathVariable Long id, @RequestBody PasswordDTO passwordDTO) {
+        return ResponseEntity.ok(userService.updatePassword(id, passwordDTO));
+    }
 }
