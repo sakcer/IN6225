@@ -20,9 +20,10 @@ public class CustomUserDetails implements UserDetails {
     public CustomUserDetails(User user) {
         this.employeeId = user.getEmployeeId();
         this.password = user.getPassword();
-        this.authorities = user.getRoles().stream()
-                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getRole()))
-                .collect(Collectors.toList());
+        this.authorities = List.of(new SimpleGrantedAuthority("ROLE_USER"));
+//        this.authorities = user.getRoles().stream()
+//                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getRole()))
+//                .collect(Collectors.toList());
         this.userId = user.getId();
     }
 

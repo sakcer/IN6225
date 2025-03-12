@@ -2,9 +2,12 @@ package com.in6225.project.controller;
 
 import com.in6225.project.dto.LoginRequest;
 import com.in6225.project.dto.ErrorDTO;
+import com.in6225.project.dto.LoginResponseDTO;
+import com.in6225.project.entity.User;
 import com.in6225.project.exception.SystemErrorCode;
 import com.in6225.project.security.JwtTokenProvider;
 import com.in6225.project.security.UserDetailsServiceImpl;
+import com.in6225.project.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +27,9 @@ public class AuthController {
     private AuthenticationManager authenticationManager;
 
     @Autowired
+    private UserService userService;
+
+    @Autowired
     private UserDetailsServiceImpl userDetailsService;
 
     @PostMapping("/login")
@@ -31,11 +37,16 @@ public class AuthController {
         Authentication authentication =  authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.getEmployeeId(), loginRequest.getPassword())
         );
+        System.out.println(loginRequest);
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String jwt = jwtTokenProvider.generateToken(authentication);
 
-        return ResponseEntity.ok(jwt);
+        User user = userService.getUserByEmployeeId(loginRequest.getEmployeeId());
+
+        LoginResponseDTO loginResponseDTO = new LoginResponseDTO(jwt, user);
+
+        return ResponseEntity.ok(loginResponseDTO);
     }
 
     @PostMapping("/logout")

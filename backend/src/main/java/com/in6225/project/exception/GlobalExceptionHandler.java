@@ -19,7 +19,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(value = Exception.class)
     public ResponseEntity<ErrorDTO<?>> handleException(HttpServletRequest request, Throwable e) {
-        return ResponseEntity.ok(ErrorDTO.of(SystemErrorCode.SYSTEM_ERROR, e.getMessage()));
+        System.out.println(e);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ErrorDTO.of(SystemErrorCode.SYSTEM_ERROR, e.getMessage()));
     }
 
     @ExceptionHandler(value = BadCredentialsException.class)
