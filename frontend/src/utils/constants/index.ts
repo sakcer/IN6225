@@ -7,14 +7,15 @@ export const AVATAR_COLORS = [
 ] as const;
 
 export const USER_STATUS = {
-  ACTIVE: 'active',
-  INACTIVE: 'inactive'
+  ALL: 'ALL',
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE'
 } as const;
 
 export const PROJECT_STATUS = {
-  ALL: 'all',
-  ACTIVE: 'active',
-  COMPLETED: 'completed'
+  ALL: 'ALL',
+  ACTIVE: 'ACTIVE',
+  COMPLETED: 'COMPLETED'
 } as const;
 
 export const USER_ROLES = {
@@ -23,6 +24,15 @@ export const USER_ROLES = {
   USER: 'USER'
 } as const;
 
-export const PAGE_SIZES = [1, 10, 20, 50, 100] as const;
+export const PAGE_SIZES = [5, 10, 20, 50, 100] as const;
 
-
+export enum Department {
+  TCH = 'TCH',
+  HR = 'HR',
+  SLS = 'SLS',
+  MKT = 'MKT',
+  FIN = 'FIN',
+  LGL = 'LGL',
+  OPS = 'OPS',
+  CS = 'CS'
+}

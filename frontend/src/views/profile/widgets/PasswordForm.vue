@@ -35,7 +35,7 @@
     <template #footer>
       <div class="flex justify-end gap-2">
         <el-button @click="visible = false">取消</el-button>
-        <el-button type="primary" @click="handleChangePassword" :loading="changingPassword">
+        <el-button type="primary" @click="handleSubmit" :loading="changingPassword">
           确认修改
         </el-button>
       </div>
@@ -45,31 +45,30 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue';
+import { ElMessage } from 'element-plus';
+import { employeeService } from '@/services/employees/employeeService';
+import { useMeStore } from '@/store/meStore';
 
-const props = defineProps({
-  modelValue: {
-    type: Boolean,
-    required: true
-  },
-  changingPassword: {
-    type: Boolean,
-    required: true
-  },
-  rules: {
-    type: Object,
-    required: true
-  },
-  handleChangePassword: {
-    type: Function,
-    required: true
-  },
-  passwordForm: {
-    type: Object,
-    required: true
-  }
-});
+const meStore = useMeStore();
+const userInfo = meStore.getMe;
 
 const visible = defineModel<boolean>('modelValue', { required: true })
-const passwordFormRef = defineModel<ElFormInstance>('passwordFormRef', { required: true })
+const passwordFormRef = ref<ElFormInstance>();
+const passwordForm = ref({});
+const changingPassword = ref(false);
+const rules = ref({});
+
+async function handleSubmit() {
+  changingPassword.value = true;
+  try {
+    const data = await employeeService.updateEmployeePassword(userInfo.id, passwordForm.value);
+    visible.value = false;
+  } catch (error) {
+    ElMessage.error('密码修改失败');
+    console.error('密码修改失败', error);
+  } finally {
+    changingPassword.value = false;
+  }
+}
 
 </script>

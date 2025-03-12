@@ -1,116 +1,150 @@
 <template>
-  <div class="login-container">
-    <div class="login-content">
-      <div class="login-header text-center mb-8">
-        <!-- <img src="@/assets/logo.png" alt="Logo" class="mx-auto mb-4 h-12" /> -->
+  <div class="min-h-screen flex flex-col justify-center items-center bg-gray-50">
+    <div class="w-full max-w-md mx-4 md:mx-auto p-8 bg-white rounded-lg shadow-lg">
+      <!-- Logo和标题 -->
+      <div class="text-center mb-8">
+        <img src="@/assets/vue.svg" alt="Logo" class="mx-auto h-12 mb-4" />
         <h1 class="text-2xl font-bold text-gray-800">员工管理系统</h1>
         <p class="text-gray-500 mt-2">欢迎回来，请登录您的账号</p>
       </div>
 
+      <!-- 登录表单 -->
       <el-form
-        ref="loginForm"
+        ref="formRef"
         :model="loginForm"
-        :rules="loginRules"
-        class="login-form"
+        :rules="rules"
+        class="space-y-6"
+        @keyup.enter="handleLogin"
       >
-        <el-form-item prop="username">
+        <!-- 用户名输入框 -->
+        <el-form-item prop="employeeId">
           <el-input
-            v-model="loginForm.username"
-            placeholder="用户名/工号"
-            prefix-icon="User"
+            v-model="loginForm.employeeId"
+            placeholder="请输入员工号"
+            :prefix-icon="User"
+            size="large"
+            class="w-full"
           />
         </el-form-item>
 
+        <!-- 密码输入框 -->
         <el-form-item prop="password">
           <el-input
             v-model="loginForm.password"
             type="password"
-            placeholder="密码"
-            prefix-icon="Lock"
+            placeholder="请输入密码"
+            :prefix-icon="Lock"
+            size="large"
             show-password
+            class="w-full"
           />
         </el-form-item>
 
-        <div class="flex justify-between items-center mb-4">
-          <el-checkbox v-model="rememberMe">记住我</el-checkbox>
-          <el-button type="text" @click="handleForgotPassword">
+        <!-- 记住我和忘记密码 -->
+        <div class="flex justify-between items-center">
+          <el-checkbox v-model="loginForm.remember">
+            记住我
+          </el-checkbox>
+          <el-button type="primary" link @click="handleForgotPassword">
             忘记密码？
           </el-button>
         </div>
 
-        <el-form-item>
-          <el-button
-            type="primary"
-            class="w-full"
-            :loading="loading"
-            @click="handleLogin"
-          >
-            登录
-          </el-button>
-        </el-form-item>
-      </el-form>
+        <!-- 登录按钮 -->
+        <el-button
+          type="primary"
+          class="w-full"
+          size="large"
+          :loading="loading"
+          @click="handleLogin"
+        >
+          {{ loading ? '登录中...' : '登录' }}
+        </el-button>
 
-      <div class="text-center text-gray-500 text-sm">
-        <p>首次登录请使用工号作为用户名和初始密码</p>
-        <p class="mt-2">如有问题请联系系统管理员</p>
-      </div>
+        <!-- 提示信息 -->
+        <div class="text-center text-sm text-gray-500 space-y-2">
+          <p>首次登录请使用员工号作为用户名和初始密码</p>
+          <p>
+            遇到问题？请联系
+            <el-button type="primary" link class="px-0">系统管理员</el-button>
+          </p>
+        </div>
+      </el-form>
+    </div>
+
+    <!-- 页脚 -->
+    <div class="mt-8 text-center">
+      <p class="text-gray-500 text-sm">
+        © {{ new Date().getFullYear() }} 员工管理系统. All rights reserved.
+      </p>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { User, Lock } from '@element-plus/icons-vue'
+import type { FormInstance } from 'element-plus'
+import { authService } from '@/services/auth/authService'
+import { USER_ROLES } from '@/utils/constants'
+import { useMeStore } from '@/store/meStore' 
+import { useUsersStore } from '@/store/userStore'
+import { useProjectsStore } from '@/store/projectStore'
+
+const meStore = useMeStore()
+const usersStore = useUsersStore()
+const projectsStore = useProjectsStore()
 
 const router = useRouter()
+const formRef = ref<FormInstance>()
+const loading = ref(false)
 
-// 登录表单
-const loginForm = ref({
-  username: '',
-  password: ''
+
+// 登录表单数据
+const loginForm = reactive({
+  employeeId: '',
+  password: '',
+  remember: false
 })
 
 // 表单验证规则
-const loginRules = {
-  username: [
-    { required: true, message: '请输入用户名', trigger: 'blur' }
+const rules = {
+  employeeId: [
+    { required: true, message: '请输入员工号', trigger: 'blur' },
+    // { min: 3, max: 20, message: '长度在 3 到 20 个字符', trigger: 'blur' }
   ],
   password: [
     { required: true, message: '请输入密码', trigger: 'blur' },
-    { min: 6, message: '密码长度不能小于6位', trigger: 'blur' }
+    // { min: 6, max: 20, message: '长度在 6 到 20 个字符', trigger: 'blur' }
   ]
 }
 
-// 其他状态
-const loading = ref(false)
-const rememberMe = ref(false)
-
 // 处理登录
 const handleLogin = async () => {
-  loading.value = true
-  try {
-    // 模拟登录请求
-    await new Promise(resolve => setTimeout(resolve, 1000))
+  if (!formRef.value) return
 
-    // 模拟登录成功
-    const userRole = loginForm.value.username.includes('admin') ? 'admin' : 'employee'
-    
-    // 存储token和用户角色
-    localStorage.setItem('token', 'mock-token')
-    localStorage.setItem('userRole', userRole)
+  try {
+    await formRef.value.validate()
+    loading.value = true
+
+    console.log(loginForm.employeeId, loginForm.password);
+    const response = await authService.login(loginForm.employeeId, loginForm.password);
+    console.log(response);
+
+    // 根据角色跳转
+    const redirectPath = localStorage.getItem('role') === USER_ROLES.ADMIN ? '/admin/dashboard' : '/employee/dashboard'
+    router.push(redirectPath)
+
+    await meStore.refetchMe()
+    await usersStore.refetchUsers()
+    await projectsStore.refetchProjects()
 
     ElMessage.success('登录成功')
-
-    // 根据角色跳转到不同的首页
-    if (userRole === 'admin') {
-      router.push('/admin/dashboard')
-    } else {
-      router.push('/employee/dashboard')
-    }
   } catch (error) {
-    ElMessage.error('登录失败，请检查用户名和密码')
+    console.error('登录失败:', error)
+    ElMessage.error('用户名或密码错误')
   } finally {
     loading.value = false
   }
@@ -121,33 +155,3 @@ const handleForgotPassword = () => {
   ElMessage.info('请联系系统管理员重置密码')
 }
 </script>
-
-<style scoped>
-.login-container {
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: linear-gradient(135deg, #1890ff 0%, #36cfc9 100%);
-}
-
-.login-content {
-  width: 400px;
-  padding: 40px;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.login-form {
-  margin-bottom: 24px;
-}
-
-:deep(.el-input__wrapper) {
-  padding-left: 11px;
-}
-
-:deep(.el-input__prefix) {
-  left: 12px;
-}
-</style> 

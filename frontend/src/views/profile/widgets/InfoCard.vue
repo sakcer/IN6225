@@ -1,58 +1,88 @@
 <template>
   <el-card shadow="hover" class="mb-4">
     <template #header>
-      <div class="flex items-center">
-        <el-icon class="mr-2"><Lock /></el-icon>
-        个人信息
+      <div class="flex">
+        <div class="mr-4">
+          <el-upload
+            class="avatar-uploader"
+            action="#"
+            :show-file-list="false"
+            :before-upload="beforeAvatarUpload"
+            :http-request="handleAvatarUpload"
+          >
+            <div class="relative group cursor-pointer">
+              <el-avatar 
+                :size="80"
+                :src="userInfo?.avatar"
+                :style="{ backgroundColor: getAvatarColor(userInfo?.name || ''), fontSize: '30px' }"
+              >
+                {{ getAvatarText(userInfo?.name || '') }}
+              </el-avatar>
+              <div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                <el-icon class="text-white text-xl"><Camera /></el-icon>
+              </div>
+            </div>
+          </el-upload>
+        </div>
+
+        <div class="flex flex-col justify-center">
+          <h2 class="text-[28px] md:text-[32px] font-bold">{{ userInfo?.name }}</h2>
+
+          <div class="flex text-[13px] space-x-1">
+            <p>Position in</p>
+            <p>{{ userInfo?.role }}</p>
+          </div>
+        </div>
       </div>
     </template>
-    <div class="space-y-4">
-      <!-- <div class="flex justify-between items-center"> -->
-      <div class="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-6 min-h-[36px] leading-5">
-        <span>Name</span>
-        <div class="flex-1">
-            <div class="flex items-center">
-                <span class="text-gray-600">{{ userInfo.email }}</span>
-            </div>
 
+    <div class="flex justify-between">
+      <div>
+        <div class="flex items-center mb-4">
+          <el-icon class="mr-2"><User /></el-icon>
+          <span class="text-gray-600">{{ userInfo?.name }}</span>
         </div>
-        <el-button class="ml-auto" link type="primary" @click="showPasswordDialog = true">
-          修改
-        </el-button>
-      </div>
-      <!-- <div class="flex justify-between items-center"> -->
-      <div class="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-6 min-h-[36px] leading-5">
-        <span>Description</span>
-        <div class="flex-1">
-            <div class="flex items-center">
-                <span class="text-gray-600">{{ userInfo.email }}</span>
-            </div>
-
+        <div class="flex items-center mb-4">
+          <el-icon class="mr-2"><Key /></el-icon>
+          <span class="text-gray-600">{{ userInfo?.employeeId }}</span>
         </div>
-        <el-tag type="success" effect="plain">已绑定</el-tag>
+        <div class="flex items-center mb-4">
+          <el-icon class="mr-2"><Briefcase /></el-icon>
+          <span class="text-gray-600">{{ userInfo?.title }}</span>
+        </div>
+        <div class="flex items-center mb-4">
+          <el-icon class="mr-2"><OfficeBuilding /></el-icon>
+          <span class="text-gray-600">{{ userInfo?.department }}</span>
+        </div>
+        <div class="flex items-center">
+          <el-icon class="mr-2"><Calendar /></el-icon>
+          <span class="text-gray-600">加入时间：{{ new Date(userInfo?.joinDate || '').toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' }).split(' ')[0] }}</span>
+        </div>
       </div>
-      <div class="flex justify-between items-center">
-        <span>邮箱绑定</span>
-        <el-tag type="success" effect="plain">已绑定</el-tag>
-      </div>
-      <div class="flex justify-between items-center">
-        <span>双因素认证</span>
-        <el-switch v-model="userInfo.twoFactorAuth" />
-      </div>
+      <el-button class="mb-auto" link type="primary" @click="showInfoDialog = true">
+        修改
+      </el-button>
     </div>
+
   </el-card>
 </template>
 
 <script setup lang="ts">
-import type { Employee } from '@/utils/types'
+import { getAvatarColor, getAvatarText } from '@/utils/avatar'
+import { Camera, User, Key, Briefcase, OfficeBuilding, Calendar } from '@element-plus/icons-vue'
+import { useMeStore } from '@/store/meStore'
+import { defineModel, computed } from 'vue'
 
-const props = defineProps({
-  userInfo: {
-    type: Object as PropType<Employee>,
-    required: true,
-  },
-})
+const meStore = useMeStore();
+const userInfo = computed(() => meStore.getMe);
 
-const showPasswordDialog = defineModel<boolean>('showPasswordDialog', { required: true })
+const showInfoDialog = defineModel<boolean>('showInfoDialog', { required: true })
 
+const beforeAvatarUpload = (rawFile: File) => {
+    console.log(rawFile)
+}
+
+const handleAvatarUpload = (rawFile: File) => {
+  console.log(rawFile)
+}
 </script>

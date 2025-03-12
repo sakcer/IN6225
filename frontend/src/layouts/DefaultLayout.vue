@@ -18,14 +18,16 @@
           <h1 class="text-xl font-bold">企业员工管理系统</h1>
           <el-dropdown>
             <span class="flex items-center cursor-pointer">
-              <el-avatar :size="32" />
-              <span class="ml-2">管理员</span>
+              <el-avatar :size="32" :style="{ backgroundColor: getAvatarColor(meStore.getMe?.name || ''), color: '#fff' }">
+                {{ getAvatarText(meStore.getMe?.name || '') }}
+              </el-avatar>
+              <span class="ml-2">{{ meStore.getMe?.name || '' }}</span>
             </span>
             <template #dropdown>
               <el-dropdown-menu>
-                <el-dropdown-item>个人信息</el-dropdown-item>
-                <el-dropdown-item>修改密码</el-dropdown-item>
-                <el-dropdown-item divided>退出登录</el-dropdown-item>
+                <el-dropdown-item @click="$router.push('/admin/profile')">个人信息</el-dropdown-item>
+                <el-dropdown-item @click="$router.push('/admin/dashboard')">回到首页</el-dropdown-item>
+                <el-dropdown-item divided @click="handleLogout">退出登录</el-dropdown-item>
               </el-dropdown-menu>
             </template>
           </el-dropdown>
@@ -42,9 +44,29 @@
 <script setup lang="ts">
 import { Monitor, User, Folder, OfficeBuilding } from '@element-plus/icons-vue'
 import { adminRoutes } from '@/router/index'
+import { localUser } from '@/utils/localUser'
+import { getAvatarColor, getAvatarText } from '@/utils/avatar'
+import { useMeStore } from '@/store/meStore'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { useRouter } from 'vue-router'
 
 const routes = adminRoutes[0].children
+const router = useRouter()
+const meStore = useMeStore();
 
+const handleLogout = () => {
+  ElMessageBox.confirm('确定要退出登录吗？', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(() => {
+    localStorage.removeItem('token')
+    localStorage.removeItem('role')
+    localStorage.removeItem('userInfo')
+    router.push('/login')
+    ElMessage.success('退出登录成功')
+  })
+}
 </script>
 
 <style scoped>

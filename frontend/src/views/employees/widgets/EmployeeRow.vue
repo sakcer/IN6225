@@ -1,6 +1,5 @@
 <template>
-  <el-table :data="filteredUsers" border>
-    <el-table-column label="FULL NAME" min-width="200">
+  <el-table-column label="FULL NAME" min-width="200">
       <template #default="{ row }">
         <div class="flex items-center gap-2">
           <el-avatar :size="32" :style="{ backgroundColor: getAvatarColor(row.name) }">
@@ -47,20 +46,38 @@
         </div>
       </template>
     </el-table-column>
-  </el-table>
 </template>
 
-<script setup>
-const props = defineProps({
-  filteredUsers: Array,
-  getAvatarColor: Function,
-  getAvatarText: Function,
-  handleEdit: Function,
-  handleDelete: Function,
-  Edit: Object,
-  Delete: Object
-});
-
+<script setup lang="ts">
+import { getAvatarColor, getAvatarText } from '@/utils/avatar';
 import { Edit, Delete } from '@element-plus/icons-vue';
+import type { Employee } from '@/utils/types';
+import { ElMessage, ElMessageBox } from 'element-plus';
+import { employeeService } from '@/services/employees/employeeService';
 
+const isEdit = defineModel<boolean>('isEdit', { required: true });
+const dialogVisible = defineModel<boolean>('dialogVisible', { required: true });
+const form = defineModel<Employee>('form', { required: true });
+const state = defineModel<boolean>('state', { required: true });
+
+const handleDelete = async (user: Employee) => {
+  try {
+    await ElMessageBox.confirm(`确定要删除用户 ${user.name} 吗？`, '警告', { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning' });
+    const data = await employeeService.deleteEmployee(user.id!);
+    ElMessage.success('删除员工[' + user.employeeId + ']成功: ' + data.message);
+    usersStore.refetchUsers()
+    state.value = !state.value;
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage.error('删除失败');
+      console.error(error);
+    }
+  }
+}
+
+const handleEdit = (user: Employee) => {
+  isEdit.value = true;
+  dialogVisible.value = true;
+  form.value = { ...user };
+} 
 </script>

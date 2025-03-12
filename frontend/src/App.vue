@@ -1,5 +1,18 @@
 <script setup lang="ts">
-import HelloWorld from './components/HelloWorld.vue'
+import { useProjectsStore } from '@/store/projectStore';
+import { onBeforeMount } from 'vue';
+import { useUsersStore } from '@/store/userStore';
+import { useMeStore } from '@/store/meStore';
+
+const projectsStore = useProjectsStore();
+const usersStore = useUsersStore();
+const meStore = useMeStore();
+
+onBeforeMount(async () => {
+  await projectsStore.refetchProjects();
+  await usersStore.refetchUsers();
+  await meStore.refetchMe();
+});
 </script>
 
 <template>
