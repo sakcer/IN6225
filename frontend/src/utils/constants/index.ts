@@ -15,7 +15,7 @@ export const USER_STATUS = {
 export const PROJECT_STATUS = {
   ALL: 'ALL',
   ACTIVE: 'ACTIVE',
-  COMPLETED: 'COMPLETED'
+  COMPLETED: 'COMPLETED',
 } as const;
 
 export const USER_ROLES = {

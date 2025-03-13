@@ -92,11 +92,12 @@ import { USER_ROLES } from '@/utils/constants'
 import { useMeStore } from '@/store/meStore' 
 import { useUsersStore } from '@/store/userStore'
 import { useProjectsStore } from '@/store/projectStore'
+import { useMyProjectStore } from '@/store/myProjectStore'
 
 const meStore = useMeStore()
 const usersStore = useUsersStore()
 const projectsStore = useProjectsStore()
-
+const myProjectStore = useMyProjectStore()
 const router = useRouter()
 const formRef = ref<FormInstance>()
 const loading = ref(false)
@@ -134,12 +135,21 @@ const handleLogin = async () => {
     console.log(response);
 
     // 根据角色跳转
-    const redirectPath = localStorage.getItem('role') === USER_ROLES.ADMIN ? '/admin/dashboard' : '/employee/dashboard'
+    const isAdmin = response.user.role === USER_ROLES.ADMIN
+    const redirectPath = isAdmin ? '/admin/dashboard' : '/employee/dashboard'
     router.push(redirectPath)
 
-    await meStore.refetchMe()
-    await usersStore.refetchUsers()
-    await projectsStore.refetchProjects()
+    
+    if (isAdmin) {  
+      await meStore.refetchMe()
+      await usersStore.refetchUsers()
+      await projectsStore.refetchProjects()
+      await myProjectStore.refetchProjects()
+    } else {
+      await myProjectStore.refetchProjects()
+      await usersStore.refetchUsers()
+      await meStore.refetchMe()
+    }
 
     ElMessage.success('登录成功')
   } catch (error) {

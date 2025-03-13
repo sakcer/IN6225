@@ -7,6 +7,8 @@ import { localUser } from '@/utils/localUser'
 export const useMeStore = defineStore('me', {
   state: () => ({
     me: null as Employee | null,
+    role: null as string | null,
+    token: null as string | null,
     // me: JSON.parse(localStorage.getItem('userInfo') || '{}') as Employee | null,
   }),
   getters: {
@@ -25,13 +27,13 @@ export const useMeStore = defineStore('me', {
         const res = await employeeService.getEmployeeById(localStorage.getItem('id'));
         console.log('refetchMe', res, localStorage.getItem('id'));
         this.me = res;
-        // console.log('refetchMe', this.me);
+        this.role = res.role;
+        this.token = localStorage.getItem('token');
 
-        // localStorage.setItem('userInfo', JSON.stringify(this.me));
-        // console.log('localStorage.setItem', localStorage.getItem('userInfo'));
       } catch (error) {
         console.error("Failed to fetch user info:", error);
       }
     },
   },
+  persist: true,
 });

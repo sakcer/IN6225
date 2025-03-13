@@ -43,14 +43,17 @@
 
 <script setup lang="ts">
 import { Monitor, User, Folder, OfficeBuilding } from '@element-plus/icons-vue'
-import { adminRoutes } from '@/router/index'
+import { adminRoutes, employeeRoutes } from '@/router/index'
 import { localUser } from '@/utils/localUser'
 import { getAvatarColor, getAvatarText } from '@/utils/avatar'
 import { useMeStore } from '@/store/meStore'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useRouter } from 'vue-router'
+import { USER_ROLES } from '@/utils/constants'
 
-const routes = adminRoutes[0].children
+const isAdmin =  localStorage.getItem('role') === USER_ROLES.ADMIN
+
+const routes = isAdmin ? adminRoutes[0].children : employeeRoutes[0].children
 const router = useRouter()
 const meStore = useMeStore();
 

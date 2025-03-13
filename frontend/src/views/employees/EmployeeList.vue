@@ -29,7 +29,7 @@
       </div>
 
       <!-- 用户列表 -->
-      <el-table :data="pageUsers" border>
+      <el-table :data="pageUsers">
         <employee-row v-model:isEdit="isEdit" v-model:dialogVisible="dialogVisible" v-model:form="form" v-model:state="state" />
       </el-table>
 
