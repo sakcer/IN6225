@@ -36,11 +36,11 @@
 import { ref } from 'vue';
 import { PAGE_SIZES } from '@/utils/constants';
 
-const props = defineProps<{
-  currentPage: number;
-  pageSize: number;
-  total: number;
-}>();
+const props = defineProps({
+  currentPage: Number,
+  pageSize: Number,
+  total: Number
+});
 
 const pageSize = ref(props.pageSize);
 

@@ -46,247 +46,91 @@
 
 
     <!-- 管理的项目 -->
-    <div class="mb-6">
-      <h2 class="text-xl font-bold mb-4">我管理的项目</h2>
+    <div class="mb-6 " >
+      <h2 class="text-xl font-bold mb-4">我的项目</h2>
 
-      <div class="flex justify-between items-center mb-4">
-
-        <div class="mb-6 flex flex-wrap gap-4">
-
-            <status-toggle v-model="status" :status="PROJECT_STATUS" />
-            <search-input v-model="searchString" placeholder="搜索项目" />
-
-            <div class="ml-auto">
-            <div class="view-switch">
-            <el-radio-group v-model="viewMode" size="small">
-                <el-radio-button label="card">卡片视图</el-radio-button>
-                <el-radio-button label="list">列表视图</el-radio-button>
-            </el-radio-group>
-
+      <div class="mb-6 w-full">
+          <div class="flex items-center mb-4">
+          <status-toggle v-model="status" :status="PROJECT_STATUS" />
+            <div class="flex-grow ml-4">
+              <search-input v-model="searchString" placeholder="搜索项目" />
             </div>
-            </div>
-        </div>
+          </div>
+
+          <div class="flex justify-end">
+          <div class="ml-auto">
+          <div class="view-switch">
+
+          <el-radio-group v-model="viewMode" >
+              <el-radio-button value="card">卡片视图</el-radio-button>
+              <el-radio-button value="list">列表视图</el-radio-button>
+          </el-radio-group>
+          </div>
+          </div>
+          </div>
       </div>
 
       <!-- 卡片视图 -->
       <div v-if="viewMode === 'card'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div v-for="project in filteredProjects" :key="project.id">
+        <div v-for="project in pageProjects" :key="project.id">
           <ProjectCard 
             :project="project"
-            :is-manager="true"
-            @edit="handleEditProject"
-            @view="handleViewProject"
+            :users="users"
+            :me="me"
+            @edit-project="handleEditProject"
+            @view-project="handleViewProject"
           />
         </div>
       </div>
 
       <!-- 列表视图 -->
       <div v-else>
-        <el-table :data="filteredProjects" style="width: 100%">
-          <el-table-column prop="name" label="项目名称" min-width="150">
-            <template #default="{ row }">
-              <div class="flex items-center">
-                {{ row.name }}
-              </div>
-            </template>
-          </el-table-column>
-          <el-table-column prop="status" label="项目状态" min-width="150">
-            <template #default="{ row }">
-              <div class="flex items-center">
-                <el-tag 
-                  :type="row.status === PROJECT_STATUS.ACTIVE ? 'success' : 'info'"
-                  size="small" 
-                  class="mr-2"
-                >
-                  {{ row.status }}
-                </el-tag>
-              </div>
-            </template>
-          </el-table-column>
-          <el-table-column prop="description" label="描述" min-width="200" show-overflow-tooltip />
-          <el-table-column prop="progress" label="进度" width="200">
-            <template #default="{ row }">
-              <el-progress 
-                :percentage="row.progress"
-                :status="row.progress === 100 ? 'success' : ''"
-              />
-            </template>
-          </el-table-column>
-          <el-table-column label="时间" width="200">
-            <template #default="{ row }">
-              <div class="text-sm text-gray-500">
-                {{ row.startDate }} - {{ row.endDate }}
-              </div>
-            </template>
-          </el-table-column>
-            <el-table-column label="项目负责人" width="100">
-            <template #default="{ row }">
-                <el-tooltip :content="users.find(user => user.id === row.leaderId)?.name" placement="top">
-                    <el-avatar :size="30" :src="users.find(user => user.id === row.leaderId)?.avatar"
-                    :style="{ backgroundColor: getAvatarColor(users.find(user => user.id === row.leaderId)?.name || '') }">
-                    {{ getAvatarText(users.find(user => user.id === row.leaderId)?.name) }}
-                    </el-avatar>
-                </el-tooltip>
-            </template>
-            </el-table-column>
-            <el-table-column label="项目成员" width="150" >
-            <template #default="{ row }" >
-            <el-tooltip v-for="member in row.memberIds?.slice(0, 2)" :key="member.id" :content="users.find(user => user.id === member)?.name" placement="top">
-            <template v-if="member">
-                <!-- Get matching user -->
-                <template v-if="users.some(user => user.id === member)">
-                <el-avatar :size="32" :src="users.find(user => user.id === member)?.avatar"
-                    :style="{ backgroundColor: getAvatarColor(users.find(user => user.id === member)?.name) }">
-                    {{ getAvatarText(users.find(user => user.id === member)?.name) }}
-                </el-avatar>
-                </template>
-            </template>
-            </el-tooltip>
-            <el-tooltip v-if="row.memberIds?.length > 2" :content="row.memberIds?.slice(2).map(m => users.find(user => user.id === m)?.name).join(', ')"
-                placement="top">
-                <el-avatar :size="32">
-                    +{{ row.memberIds?.length - 2 }}
-                </el-avatar>
-            </el-tooltip>
-            </template>
-            </el-table-column>
-          <el-table-column label="操作" width="120" fixed="right">
-            <template #default="{ row }">
-              <el-button-group>
-                <el-tooltip content="查看详情" placement="top">
-                  <el-button 
-                    type="info" 
-                    :icon="View" 
-                    circle 
-                    @click="handleViewProject(row)"
-                  />
-                </el-tooltip>
-                <el-tooltip content="编辑项目" placement="top">
-                  <el-button 
-                    type="primary" 
-                    :icon="Edit" 
-                    circle 
-                    @click="handleEditProject(row)"
-                    :disabled="row.leaderId !== mockUser.id"
-                  />
-                </el-tooltip>
-              </el-button-group>
-            </template>
-          </el-table-column>
-        </el-table>
+          <project-row 
+          :projects="pageProjects"
+          :users="users" 
+          :me="me" 
+          @edit-project="handleEditProject" 
+          @view-project="handleViewProject" />
       </div>
     </div>
 
-    <!-- 项目编辑/查看对话框 -->
-    <el-dialog v-model="dialogVisible" :title="isEdit ? 'Edit Project' : 'Add Project'" width="50%">
-        <el-form ref="formRef" :model="form" :rules="rules" label-width="100px">
-        <!-- 项目名称 -->
-        <el-form-item label="Name" prop="name">
-            <el-input v-model="form.name" />
-        </el-form-item>
+    <pagination v-model:current-page="currentPage" v-model:page-size="pageSize"
+    :total="total" />
 
-        <!-- 项目描述 -->
-        <el-form-item label="Description" prop="description">
-            <el-input v-model="form.description" type="textarea" :rows="3" />
-        </el-form-item>
+    <project-form 
+    v-model:dialogVisible="dialogVisible"
+    :form="form" 
+    :users="users" 
+    :me="me"
+    :form-type="formType"
+    @close-project="handleClose"
+    @submit-project="handleSubmit" />
 
-        <!-- 项目状态 -->
-        <el-form-item label="Status" prop="status">
-            <el-select v-model="form.status" class="w-full">
-            <el-option label="Active" :value="PROJECT_STATUS.ACTIVE" />
-            <el-option label="Completed" :value="PROJECT_STATUS.COMPLETED" />
-            </el-select>
-        </el-form-item>
-
-        <!-- 项目进度 -->
-        <el-form-item label="Progress" prop="progress">
-            <el-slider v-model="form.progress" :step="10" show-stops />
-        </el-form-item>
-
-        <!-- 项目负责人 -->
-        <el-form-item label="Leader" prop="leader">
-            <el-select v-model="form.leaderId" class="w-full" filterable  :disabled="true">
-            <el-option v-for="user in users" :key="user.id" :label="user.name" :value="user.id">
-                <div class="flex items-center">
-                <el-avatar :size="24" :style="{ backgroundColor: getAvatarColor(user.name) }" class="mr-2">
-                    {{ getAvatarText(user.name) }}
-                </el-avatar>
-                {{ user.name }}
-                </div>
-            </el-option>
-            </el-select>
-        </el-form-item>
-
-        <!-- 项目成员 -->
-        <el-form-item label="Members" prop="members">
-            <el-select v-model="form.memberIds" multiple filterable class="w-full">
-            <el-option v-for="user in users" :key="user.id" :label="user.name" :value="user.id">
-                <div class="flex items-center">
-                <el-avatar :size="24" :style="{ backgroundColor: getAvatarColor(user.name) }" class="mr-2">
-                    {{ getAvatarText(user.name) }}
-                </el-avatar>
-                {{ user.name }}
-                </div>
-            </el-option>
-            </el-select>
-        </el-form-item>
-        </el-form>
-
-        <template #footer>
-        <span class="dialog-footer">
-          <el-button @click="dialogVisible = false">取消</el-button>
-          <el-button type="primary" @click="handleSave" v-if="isEdit">保存</el-button>
-        </span>
-      </template>
-    </el-dialog>
-    <!-- <el-dialog v-model="dialogVisible" :title="isEdit ? '编辑项目' : '项目详情'" width="50%">
-      <el-form :model="form" label-width="120px">
-        <el-form-item label="项目名称">
-          <el-input v-model="form.name" :disabled="!isEdit" />
-        </el-form-item>
-        <el-form-item label="项目描述">
-          <el-input v-model="form.description" type="textarea" :disabled="!isEdit" />
-        </el-form-item>
-        <el-form-item label="项目状态">
-          <el-select v-model="form.status" :disabled="!isEdit">
-            <el-option v-for="status in PROJECT_STATUS" :key="status" :label="status" :value="status" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="项目进度">
-          <el-slider v-model="form.progress" :disabled="!isEdit" />
-        </el-form-item>
-
-      </el-form>
-      <template #footer>
-        <span class="dialog-footer">
-          <el-button @click="dialogVisible = false">取消</el-button>
-          <el-button type="primary" @click="handleSave" v-if="isEdit">保存</el-button>
-        </span>
-      </template>
-    </el-dialog> -->
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import ProjectCard from '@/views/projects/widgets/ProjectCard.vue'
+import ProjectCard from './widgets/ProjectCard.vue'
+import ProjectRow from '@/views/projects/widgets/ProjectRow.vue'
+import ProjectForm from '@/views/projects/widgets/ProjectForm.vue'
 import SearchInput from '@/components/SearchInput.vue'
 import StatusToggle from '@/components/StatusToggle.vue'
+import Pagination from '@/components/Pagination.vue'
 import { View, Edit } from '@element-plus/icons-vue'
 import type { Project, User } from '@/types'
 import { onMounted } from 'vue'
 import { useMeStore } from '@/store/meStore'
 import { useUsersStore } from '@/store/userStore'
 import { useMyProjectStore } from '@/store/myProjectStore'
-import { PROJECT_STATUS } from '@/utils/constants'
+import { PROJECT_STATUS, PAGE_SIZES } from '@/utils/constants'
 import { getAvatarColor, getAvatarText } from '@/utils/avatar'
 import { projectService } from '@/services/projects/projectService'
 import { ElMessage } from 'element-plus'
 
 // 状态
 const dialogVisible = ref(false)
-const isEdit = ref(false)
-const rules = ref({})
+const formType = ref(0)
 const formRef = ref()
 const form = ref<Project>({})
 
@@ -296,6 +140,11 @@ const usersStore = useUsersStore()
 
 const myProjectStore = useMyProjectStore()
 const users = computed(() => usersStore.users)
+const me = computed(() => meStore.me)
+
+const currentPage = ref(1)
+const pageSize = ref(PAGE_SIZES[0])
+const total = computed(() => filteredProjects.value.length)
 
 // 视图模式
 const viewMode = ref('card') // 'card' | 'list'
@@ -313,6 +162,10 @@ const filteredProjects = computed(() => {
       project.description.toLowerCase().includes(searchString.value.toLowerCase())
     return matchesStatus && matchesSearch
   })
+})
+
+const pageProjects = computed(() => {
+  return filteredProjects.value.slice((currentPage.value - 1) * pageSize.value, currentPage.value * pageSize.value)
 })
 
 // 计算属性
@@ -339,28 +192,60 @@ const updateTime = () => {
 }
 
 const handleEditProject = (project: Project) => {
-  isEdit.value = true
-  form.value = { ...project }
+  console.log("处理编辑项目的逻辑")
+  console.log(project);
+  formType.value = 1
+
+  form.value = project
+  
+  // isEdit.value = true
+  // form.value = { ...project }
   dialogVisible.value = true
 }
 
 const handleViewProject = (project: Project) => {
-  isEdit.value = false
-  form.value = { ...project }
+  console.log("处理查看项目的逻辑")
+  console.log(project);
+  formType.value = 0
+
+  form.value = project
   dialogVisible.value = true
 }
 
-const handleSave = async () => {
+const handleClose = (project: Project) => {
+  console.log("处理关闭项目的逻辑")
+  console.log(project);
+  dialogVisible.value = false
+}
+
+const handleSubmit = async (form: Project) => {
+  console.log("处理提交项目的逻辑")
+  console.log(form);
+
   try {
-    // console.log(form.value)
-    const data = await projectService.updateProject(form.value.id, form.value)
-    console.log(data)
-    dialogVisible.value = false
+    // loading.value = true;
+    form.members = form.memberIds.map(id => ({ id: id, name: "xxx"}));
+    console.log(form.members);
+    delete form.memberIds;
+    console.log(form);
+    console.log(formType.value);
+
+    let data;
+    if (formType.value === 1) {
+      data = await projectService.updateProject(form.id!, form);
+    } else {
+      data = await projectService.createProject(form);
+    }
+    ElMessage.success('添加项目[' + data.id + ']成功');
     myProjectStore.refetchProjects()
-    ElMessage.success('项目更新成功')
   } catch (error) {
-    console.error(error)
-    ElMessage.error('项目更新失败')
+    ElMessage.error('添加失败');
+    console.log(error);
+  } finally {
+    setTimeout(() => {
+      dialogVisible.value = false;
+      // loading.value = false;
+    }, 500);
   }
 }
 

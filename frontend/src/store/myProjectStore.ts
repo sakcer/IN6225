@@ -3,20 +3,20 @@ import { ref } from 'vue'
 import type { Employee } from '@/utils/types'
 import { ElMessage } from 'element-plus';
 import { projectService } from '@/services/projects/projectService';
-
+import { PROJECT_STATUS } from '@/utils/constants';
 
 export const useMyProjectStore = defineStore('myProjects', {
   state: () => ({
     projects: [{
-      id: '',
+      id: -1,
       name: '',
       description: '',
       startDate: '',
       endDate: '',
-      status: '',
-      progress: '',
-      leaderId: '',
-      memberIds: [],
+      status: PROJECT_STATUS.ACTIVE,
+      progress: 0,
+      leaderId: -1,
+      members: [],
     }]
   }),
   getters: {
@@ -27,7 +27,6 @@ export const useMyProjectStore = defineStore('myProjects', {
       try {
         const res = await projectService.getAllProjects();
         this.projects = res.projects;
-        console.log('refetchProjects', this.projects);
       } catch (error) {
         console.error("Failed to fetch projects info:", error);
       }

@@ -1,6 +1,6 @@
 <template>
-  <el-dialog :title="isEdit ? '编辑员工' : '添加员工'" v-model="dialogVisible" width="600px" @close="handleClose">
-    <el-form ref="formRef" :model="form" label-width="100px" :rules="rules">
+  <el-dialog :title="formType === 1 ? '编辑员工' : '添加员工'" v-model="dialogVisible" width="600px" @close="handleClose">
+    <el-form ref="formRef" :model="form" label-width="100px" :rules="employeeRules">
 
       <el-row :gutter="20">
         <el-col :span="12">
@@ -77,54 +77,35 @@ import { USER_ROLES, USER_STATUS } from '@/utils/constants';
 import { ref } from 'vue';
 import { ElMessage } from 'element-plus';
 import { employeeService } from '@/services/employees/employeeService';
-import { rules } from '@/utils/types/employee';
+import { employeeRules } from '@/utils/constants/rules';
 import { Department } from '@/utils/constants';
 import { useUsersStore } from '@/store/userStore';
 
 const usersStore = useUsersStore()
 
 const props = defineProps({
-  isEdit: Boolean,
   form: Object,
   departments: Array,
+  formType: Number,
 });
 
 const dialogVisible = defineModel<boolean>('modelValue', { required: true })
 const loading = defineModel<boolean>('loading', { required: true })
-const state = defineModel<boolean>('state', { required: true })
-const formRef = ref<ElFormInstance>();
+const formRef = ref<InstanceType<typeof ElForm>>()
 
-const handleSubmit = async () => {
-  formRef.value.validate(async (valid) => {
+const emit = defineEmits(['submit-employee', 'close-employee']);
+
+const handleSubmit = () => {
+  formRef.value?.validate((valid) => {
     if (valid) {
-      try {
-        loading.value = true;
-        if (props.isEdit) {
-          const data = await employeeService.updateEmployee(props.form.id, props.form);
-          ElMessage.success('编辑员工[' + data.employeeId + ']成功');
-        } else {
-          delete props.form.id;
-          const data = await employeeService.createEmployee(props.form);
-          ElMessage.success('添加员工[' + data.employeeId + ']成功');
-        }
-        usersStore.refetchUsers()
-        // state.value = !state.value;
-      } catch {
-        ElMessage.error('添加失败');
-      } finally {
-        setTimeout(() => {
-          dialogVisible.value = false;
-          loading.value = false;
-        }, 500);
-      }
-    } else {
-      ElMessage.error('表单验证失败');
-      return false; // 阻止提交
+      emit('submit-employee', props.form);
     }
   });
 }
 
 const handleClose = () => {
-  dialogVisible.value = false;
+  formRef.value?.resetFields();
+  emit('close-employee', props.form);
 }
+
 </script>

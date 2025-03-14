@@ -18,10 +18,10 @@
           <h1 class="text-xl font-bold">企业员工管理系统</h1>
           <el-dropdown>
             <span class="flex items-center cursor-pointer">
-              <el-avatar :size="32" :style="{ backgroundColor: getAvatarColor(meStore.getMe?.name || ''), color: '#fff' }">
-                {{ getAvatarText(meStore.getMe?.name || '') }}
+              <el-avatar :size="32" :style="{ backgroundColor: getAvatarColor(me.name), color: '#fff' }">
+                {{ getAvatarText(me.name) }}
               </el-avatar>
-              <span class="ml-2">{{ meStore.getMe?.name || '' }}</span>
+              <span class="ml-2">{{ me.name }}</span>
             </span>
             <template #dropdown>
               <el-dropdown-menu>
@@ -50,12 +50,15 @@ import { useMeStore } from '@/store/meStore'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useRouter } from 'vue-router'
 import { USER_ROLES } from '@/utils/constants'
+import { computed } from 'vue'
 
 const isAdmin =  localStorage.getItem('role') === USER_ROLES.ADMIN
 
 const routes = isAdmin ? adminRoutes[0].children : employeeRoutes[0].children
 const router = useRouter()
 const meStore = useMeStore();
+
+const me = computed(() => meStore.getMe)
 
 const handleLogout = () => {
   ElMessageBox.confirm('确定要退出登录吗？', '提示', {

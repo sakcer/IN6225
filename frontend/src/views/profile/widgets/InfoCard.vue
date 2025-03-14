@@ -1,88 +1,59 @@
 <template>
-  <el-card shadow="hover" class="mb-4">
-    <template #header>
-      <div class="flex">
-        <div class="mr-4">
-          <el-upload
-            class="avatar-uploader"
-            action="#"
-            :show-file-list="false"
-            :before-upload="beforeAvatarUpload"
-            :http-request="handleAvatarUpload"
-          >
-            <div class="relative group cursor-pointer">
-              <el-avatar 
-                :size="80"
-                :src="userInfo?.avatar"
-                :style="{ backgroundColor: getAvatarColor(userInfo?.name || ''), fontSize: '30px' }"
-              >
-                {{ getAvatarText(userInfo?.name || '') }}
-              </el-avatar>
-              <div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
-                <el-icon class="text-white text-xl"><Camera /></el-icon>
-              </div>
+    <el-card shadow="hover" class="profile-card">
+        <div class="text-center">
+            <el-avatar :size="120" :src="employee.avatar" class="mb-4"
+                :style="{ backgroundColor: getAvatarColor(employee.name) }">
+                {{ getAvatarText(employee.name) }}
+            </el-avatar>
+            <h2 class="text-xl font-bold mb-2">{{ employee.name }}</h2>
+            <el-tag class="mb-4" :type="getStatusType(employee.status)">
+                {{ employee.status }}
+            </el-tag>
+            <div class="text-gray-600 mb-2">{{ employee.title || employee.role }}</div>
+            <div class="text-gray-500 text-sm">{{ employee.department }}</div>
+        </div>
+
+        <el-divider />
+
+        <div class="space-y-4">
+            <div class="flex items-center">
+                <el-icon class="mr-2">
+                    <Message />
+                </el-icon>
+                <span class="text-gray-600">{{ employee.email }}</span>
             </div>
-          </el-upload>
+            <div class="flex items-center">
+                <el-icon class="mr-2">
+                    <User />
+                </el-icon>
+                <span class="text-gray-600">工号：{{ employee.employeeId }}</span>
+            </div>
+            <div class="flex items-center">
+                <el-icon class="mr-2">
+                    <Calendar />
+                </el-icon>
+                <span class="text-gray-600">入职时间：{{ employee.joinDate || '暂无' }}</span>
+            </div>
         </div>
-
-        <div class="flex flex-col justify-center">
-          <h2 class="text-[28px] md:text-[32px] font-bold">{{ userInfo?.name }}</h2>
-
-          <div class="flex text-[13px] space-x-1">
-            <p>Position in</p>
-            <p>{{ userInfo?.role }}</p>
-          </div>
-        </div>
-      </div>
-    </template>
-
-    <div class="flex justify-between">
-      <div>
-        <div class="flex items-center mb-4">
-          <el-icon class="mr-2"><User /></el-icon>
-          <span class="text-gray-600">{{ userInfo?.name }}</span>
-        </div>
-        <div class="flex items-center mb-4">
-          <el-icon class="mr-2"><Key /></el-icon>
-          <span class="text-gray-600">{{ userInfo?.employeeId }}</span>
-        </div>
-        <div class="flex items-center mb-4">
-          <el-icon class="mr-2"><Briefcase /></el-icon>
-          <span class="text-gray-600">{{ userInfo?.title }}</span>
-        </div>
-        <div class="flex items-center mb-4">
-          <el-icon class="mr-2"><OfficeBuilding /></el-icon>
-          <span class="text-gray-600">{{ userInfo?.department }}</span>
-        </div>
-        <div class="flex items-center">
-          <el-icon class="mr-2"><Calendar /></el-icon>
-          <span class="text-gray-600">加入时间：{{ new Date(userInfo?.joinDate || '').toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' }).split(' ')[0] }}</span>
-        </div>
-      </div>
-      <el-button class="mb-auto" link type="primary" @click="showInfoDialog = true">
-        修改
-      </el-button>
-    </div>
-
-  </el-card>
+    </el-card>
 </template>
 
 <script setup lang="ts">
 import { getAvatarColor, getAvatarText } from '@/utils/avatar'
-import { Camera, User, Key, Briefcase, OfficeBuilding, Calendar } from '@element-plus/icons-vue'
-import { useMeStore } from '@/store/meStore'
-import { defineModel, computed } from 'vue'
+import { Message, User, Calendar } from '@element-plus/icons-vue'
+import type { Employee } from '@/utils/types/employee'
 
-const meStore = useMeStore();
-const userInfo = computed(() => meStore.getMe);
+const props = defineProps<{
+    employee: Employee
+}>()
 
-const showInfoDialog = defineModel<boolean>('showInfoDialog', { required: true })
-
-const beforeAvatarUpload = (rawFile: File) => {
-    console.log(rawFile)
-}
-
-const handleAvatarUpload = (rawFile: File) => {
-  console.log(rawFile)
+const getStatusType = (status: string) => {
+    const types = {
+        'ACTIVE': 'success',
+        'INACTIVE': 'info',
+        'SUSPENDED': 'warning',
+        'TERMINATED': 'danger'
+    }
+    return types[status] || 'info'
 }
 </script>

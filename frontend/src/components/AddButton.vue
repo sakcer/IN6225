@@ -1,5 +1,5 @@
 <template>
-  <el-button type="primary" @click="handleAdd">
+  <el-button type="primary" @click="emitEvent('add')">
     <el-icon class="mr-2">
       <Plus />
     </el-icon>
@@ -14,25 +14,9 @@ defineProps<{
   buttonText: string;
 }>();
 
-// defineEmits<{
-//   (e: 'add'): void;
-// }>();
-
-const dialogVisible = defineModel<boolean>('dialogVisible', { required: true });
-const isEdit = defineModel<boolean>('isEdit', { required: true });
-
-const handleAdd = () => {
-  isEdit.value = false
-  // form.value = {
-  //   name: '',
-  //   description: '',
-  //   status: PROJECT_STATUS.ACTIVE,
-  //   progress: 0,
-  //   dateRange: [],
-  //   leaderId: 0,
-  //   memberIds: []
-  // }
-  dialogVisible.value = true
-}
+const emit = defineEmits(['add']);
+const emitEvent = (event: string) => {
+  emit(event);
+};
 
 </script>

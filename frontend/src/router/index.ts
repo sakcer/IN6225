@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useMeStore } from '@/store/meStore'
 import { USER_ROLES } from '@/utils/constants'
-// 管理员路由
+
 const adminRoutes = [
   {
     path: '/admin',
@@ -22,12 +22,6 @@ const adminRoutes = [
         meta: { title: '员工管理', icon: 'User' }
       },
       {
-        path: 'user',
-        name: 'UserList',
-        component: () => import('@/views/user/Dashboard.vue'),
-        meta: { title: '用户管理', icon: 'User' }
-      },
-      {
         path: 'projects',
         name: 'ProjectList',
         component: () => import('@/views/projects/ProjectList.vue'),
@@ -38,7 +32,13 @@ const adminRoutes = [
         name: 'AdminProfile',
         component: () => import('@/views/profile/Profile.vue'),
         meta: { title: '个人信息', icon: 'User' }
-      }
+      },
+      {
+        path: 'user',
+        name: 'UserList',
+        component: () => import('@/views/user/Dashboard.vue'),
+        meta: { title: '用户管理', icon: 'User' }
+      },
     ]
   }
 ]

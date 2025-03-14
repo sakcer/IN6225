@@ -24,22 +24,21 @@
           </div>
         </div>
         <div class="flex justify-end">
-          <add-button button-text="Add User" v-model:dialogVisible="dialogVisible" v-model:isEdit="isEdit" v-model:form="form"/>
+          <add-button button-text="Add User" @add="handleAddEmployee" />
         </div>
       </div>
 
       <!-- 用户列表 -->
-      <el-table :data="pageUsers">
-        <employee-row v-model:isEdit="isEdit" v-model:dialogVisible="dialogVisible" v-model:form="form" v-model:state="state" />
-      </el-table>
+      <employee-row :data="pageUsers" @edit-employee="handleEdit" @delete-employee="handleDelete" />
 
       <!-- 分页 -->
-      <pagination v-model:current-page="pagination.currentPage" v-model:page-size="pagination.pageSize"
-        :total="pagination.total" />
+      <pagination v-model:current-page="currentPage" v-model:page-size="pageSize"
+        :total="total" />
     </el-card>
 
     <!-- 添加/编辑用户对话框 -->
-    <employee-form v-model="dialogVisible" v-model:loading="loading" :is-edit="isEdit" :form="form" v-model:state="state"/>
+    <employee-form v-model="dialogVisible" v-model:loading="loading" :form="form" :form-type="formType"
+      @submit-employee="handleSubmit" @close-employee="handleClose" />
   </div>
 </template>
 
@@ -60,8 +59,10 @@ import EmployeeRow from './widgets/EmployeeRow.vue';
 import Pagination from '@/components/Pagination.vue';
 import EmployeeForm from './widgets/EmployeeForm.vue';
 import Breadcrumb from '@/components/Breadcrumb.vue';
-import { PAGE_SIZES, USER_STATUS } from '@/utils/constants';
+import { PAGE_SIZES, USER_STATUS, USER_ROLES } from '@/utils/constants';
 import { useUsersStore } from '@/store/userStore';
+import { employeeService } from '@/services/employees/employeeService';
+import { ElMessageBox, ElMessage } from 'element-plus';
 
 const usersStore = useUsersStore();
 const users = computed(() => usersStore.getUsers);
@@ -72,15 +73,23 @@ const searchQuery = ref('');
 const loading = ref(false);
 const dialogVisible = ref(false);
 const isEdit = ref(false);
+const formType = ref(0);
 const form = ref<Employee>({
-  id: '',
+  id: 0,
   name: '',
   email: '',
   phone: '',
   department: '',
   title: '',
-  status: '',
+  status: USER_STATUS.ACTIVE,
+  role: USER_ROLES.EMPLOYEE,
+  joinDate: '',
+  avatar: '',
 });
+
+const currentPage = ref(1)
+const pageSize = ref(PAGE_SIZES[0])
+const total = computed(() => filteredUsers.value.length)
 
 const total_users = computed(() => users.value.length);
 const total_active_users = computed(() => users.value.filter(user => user.status === USER_STATUS.ACTIVE).length);
@@ -111,14 +120,78 @@ const filteredUsers = computed(() => {
   });
 });
 
-const pagination = ref<PaginationConfig>({
-  currentPage: 1,
-  pageSize: PAGE_SIZES[0],
-  total: computed(() => filteredUsers.value.length),
+const pageUsers = computed(() => {
+  return filteredUsers.value.slice((currentPage.value - 1) * pageSize.value, currentPage.value * pageSize.value);
 });
 
-const pageUsers = computed(() => {
-  const { currentPage, pageSize } = pagination.value;
-  return filteredUsers.value.slice((currentPage - 1) * pageSize, currentPage * pageSize);
-});
+const handleAddEmployee = () => {
+  console.log("处理添加员工的逻辑")
+  formType.value = 0;
+  dialogVisible.value = true;
+}
+
+const handleDelete = async (user: Employee) => {
+  console.log("处理删除员工的逻辑")
+  console.log(user);
+
+  try {
+    await ElMessageBox.confirm(`确定要删除用户 ${user.name} 吗？`, '警告', { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning' });
+    const data = await employeeService.deleteEmployee(user.id!);
+    ElMessage.success('删除员工[' + user.employeeId + ']成功: ' + data.message);
+    usersStore.refetchUsers()
+    state.value = !state.value;
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage.error('删除失败');
+      console.error(error);
+    }
+  }
+}
+
+const handleEdit = (user: Employee) => {
+  console.log("处理编辑员工的逻辑")
+  console.log(user);
+  formType.value = 1;
+  form.value = { ...user };
+  dialogVisible.value = true;
+}
+
+const handleSubmit = async (form) => {
+  console.log("处理提交员工的逻辑")
+  console.log(form)
+
+  try {
+    loading.value = true;
+    if (formType.value === 1) {
+      const data = await employeeService.updateEmployee(form.id, form);
+      ElMessage.success('编辑员工[' + data.employeeId + ']成功');
+    } else {
+      delete form.id;
+      const data = await employeeService.createEmployee(form);
+      ElMessage.success('添加员工[' + data.employeeId + ']成功');
+    }
+    usersStore.refetchUsers()
+  } catch {
+    ElMessage.error('添加失败');
+  } finally {
+    setTimeout(() => {
+      dialogVisible.value = false;
+      loading.value = false;
+    }, 500);
+  }
+
+  // formRef.value.validate(async (valid) => {
+  //   if (valid) {
+  //   } else {
+  //     ElMessage.error('表单验证失败');
+  //     return false; // 阻止提交
+  //   }
+  // });
+}
+
+const handleClose = () => {
+  console.log("处理关闭员工的逻辑")
+  dialogVisible.value = false;
+}
+
 </script>

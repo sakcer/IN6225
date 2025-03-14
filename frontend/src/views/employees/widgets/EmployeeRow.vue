@@ -1,4 +1,5 @@
 <template>
+<el-table :data="data">
   <el-table-column label="FULL NAME" min-width="200">
       <template #default="{ row }">
         <div class="flex items-center gap-2">
@@ -22,15 +23,15 @@
     </el-table-column>
     <el-table-column label="ROLE" min-width="120">
       <template #default="{ row }">
-        <el-tag :type="row.role === 'OWNER' ? 'warning' : 'info'" effect="plain">
+        <el-tag :type="row.role === USER_ROLES.ADMIN ? 'danger' : row.role === USER_ROLES.OWNER ? 'primary' : 'info'" effect="plain">
           {{ row.role }}
         </el-tag>
       </template>
     </el-table-column>
     <el-table-column label="STATUS" width="100">
       <template #default="{ row }">
-        <el-tag :type="row.status === 'active' ? 'success' : 'info'" effect="light" size="small">
-          {{ row.status || 'active' }}
+        <el-tag :type="row.status === USER_STATUS.ACTIVE ? 'success' : 'info'" effect="light" size="small">
+          {{ row.status || USER_STATUS.INACTIVE }}
         </el-tag>
       </template>
     </el-table-column>
@@ -38,46 +39,43 @@
       <template #default="{ row }">
         <div class="flex gap-2">
           <el-tooltip content="Edit User" placement="top">
-            <el-button type="primary" :icon="Edit" circle @click="handleEdit(row)" />
+            <el-button type="primary" :icon="Edit" circle @click="emitEvent('edit-employee', row)" />
           </el-tooltip>
           <el-tooltip content="Delete User" placement="top">
-            <el-button type="danger" :icon="Delete" circle @click="handleDelete(row)" />
+            <el-button type="danger" :icon="Delete" circle @click="emitEvent('delete-employee', row)" />
           </el-tooltip>
         </div>
       </template>
     </el-table-column>
+</el-table>
 </template>
 
 <script setup lang="ts">
 import { getAvatarColor, getAvatarText } from '@/utils/avatar';
 import { Edit, Delete } from '@element-plus/icons-vue';
+import { USER_STATUS, USER_ROLES } from '@/utils/constants';
 import type { Employee } from '@/utils/types';
-import { ElMessage, ElMessageBox } from 'element-plus';
-import { employeeService } from '@/services/employees/employeeService';
 
-const isEdit = defineModel<boolean>('isEdit', { required: true });
-const dialogVisible = defineModel<boolean>('dialogVisible', { required: true });
-const form = defineModel<Employee>('form', { required: true });
-const state = defineModel<boolean>('state', { required: true });
-
-const handleDelete = async (user: Employee) => {
-  try {
-    await ElMessageBox.confirm(`确定要删除用户 ${user.name} 吗？`, '警告', { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning' });
-    const data = await employeeService.deleteEmployee(user.id!);
-    ElMessage.success('删除员工[' + user.employeeId + ']成功: ' + data.message);
-    usersStore.refetchUsers()
-    state.value = !state.value;
-  } catch (error) {
-    if (error !== 'cancel') {
-      ElMessage.error('删除失败');
-      console.error(error);
-    }
+const props = defineProps({
+  data: {
+    type: Array<Employee>,
+    required: true
   }
-}
+});
 
-const handleEdit = (user: Employee) => {
-  isEdit.value = true;
-  dialogVisible.value = true;
-  form.value = { ...user };
-} 
+const emit = defineEmits(['edit-employee', 'delete-employee']);
+const emitEvent = (event: string, row: any) => {
+  emit(event, row);
+};
+
+import { watch } from 'vue';
+import { onMounted } from 'vue';
+watch(props.data, (newVal) => {
+  console.log('data changed:', newVal);
+});
+
+onMounted(() => {
+  console.log('data changed:', props.data);
+});
+
 </script>

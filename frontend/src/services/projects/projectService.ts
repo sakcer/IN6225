@@ -27,11 +27,12 @@ export const projectService = {
     Object.entries(project).forEach(([key, value]) => {
         console.log(`${key}: ${value}`);
     });
-    const response = await axios.post(API_ENDPOINTS.PROJECTS_ADD, project);
+    const { id, ...rest } = project;
+    const response = await axios.post(API_ENDPOINTS.PROJECTS_ADD, rest);
     return response.data;
   },
 
-  async updateProject(id: string, project: Partial<ProjectForm>) {
+  async updateProject(id: number, project: Partial<ProjectForm>) {
     console.log('Project Data:');
     Object.entries(project).forEach(([key, value]) => {
         console.log(`${key}: ${value}`);

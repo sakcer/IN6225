@@ -24,25 +24,3 @@ export interface ProjectForm {
   leaderId: number;  // 项目负责人
   memberIds: number[];  // 项目成员列表
 }
-
-export const rules: FormRules = {
-  // name: [
-  //   { required: true, message: '请输入项目名称', trigger: 'blur' },
-  //   { min: 1, max: 50, message: '长度在 3 到 50 个字符', trigger: 'blur' }
-  // ],
-  // // description: [
-  // //   { required: true, message: '请输入项目描述', trigger: 'blur' }
-  // // ],
-  // status: [
-  //   { required: true, message: '请选择项目状态', trigger: 'change' }
-  // ],
-  // dateRange: [
-  //   { required: true, message: '请选择项目起止时间', trigger: 'change' }
-  // ],
-  // leaderId: [
-  //   { required: true, message: '请选择项目负责人', trigger: 'change' }
-  // ],
-  // memberIds: [
-  //   { required: true, message: '请选择项目成员', trigger: 'change' }
-  // ]
-}
