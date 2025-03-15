@@ -18,15 +18,15 @@
           <h1 class="text-xl font-bold">企业员工管理系统</h1>
           <el-dropdown>
             <span class="flex items-center cursor-pointer">
-              <el-avatar :size="32" :style="{ backgroundColor: getAvatarColor(me.name), color: '#fff' }">
-                {{ getAvatarText(me.name) }}
+              <el-avatar :size="32" :style="{ backgroundColor: getAvatarColor(me?.name || ''), color: '#fff' }">
+                {{ getAvatarText(me?.name || '') }}
               </el-avatar>
-              <span class="ml-2">{{ me.name }}</span>
+              <span class="ml-2">{{ me?.name || '' }}</span>
             </span>
             <template #dropdown>
               <el-dropdown-menu>
-                <el-dropdown-item @click="$router.push('/admin/profile')">个人信息</el-dropdown-item>
-                <el-dropdown-item @click="$router.push('/admin/dashboard')">回到首页</el-dropdown-item>
+                <el-dropdown-item @click="handleProfile">个人信息</el-dropdown-item>
+                <el-dropdown-item @click="handleReturn">回到首页</el-dropdown-item>
                 <el-dropdown-item divided @click="handleLogout">退出登录</el-dropdown-item>
               </el-dropdown-menu>
             </template>
@@ -52,13 +52,13 @@ import { useRouter } from 'vue-router'
 import { USER_ROLES } from '@/utils/constants'
 import { computed } from 'vue'
 
-const isAdmin =  localStorage.getItem('role') === USER_ROLES.ADMIN
+const meStore = useMeStore();
+const me = computed(() => meStore.getMe)
+
+const isAdmin =  me.value.role === USER_ROLES.ADMIN
 
 const routes = isAdmin ? adminRoutes[0].children : employeeRoutes[0].children
 const router = useRouter()
-const meStore = useMeStore();
-
-const me = computed(() => meStore.getMe)
 
 const handleLogout = () => {
   ElMessageBox.confirm('确定要退出登录吗？', '提示', {
@@ -66,12 +66,28 @@ const handleLogout = () => {
     cancelButtonText: '取消',
     type: 'warning'
   }).then(() => {
-    localStorage.removeItem('token')
-    localStorage.removeItem('role')
-    localStorage.removeItem('userInfo')
+    meStore.clearMe()
     router.push('/login')
     ElMessage.success('退出登录成功')
+  }).catch(() => {
+    ElMessage.info('取消退出')
   })
+}
+
+const handleReturn = () => {
+  if (isAdmin) { 
+    router.push('/admin/dashboard')
+  } else {
+    router.push('/employee/dashboard')
+  }
+}
+
+const handleProfile = () => {
+  if (isAdmin) {
+    router.push('/admin/profile')
+  } else {
+    router.push('/employee/profile')
+  }
 }
 </script>
 

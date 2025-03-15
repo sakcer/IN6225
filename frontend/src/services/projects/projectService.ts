@@ -49,5 +49,10 @@ export const projectService = {
   async getProjectById(id: string) {
     const response = await axios.get(`${API_ENDPOINTS.PROJECTS}/${id}`);
     return response.data;
-  }
+  },
+
+  async getProjectsByUserId(userId: string) {
+    const response = await axios.get(`${API_ENDPOINTS.PROJECTS_ALL}/${userId}`);
+    return response.data;
+  } 
 }; 

@@ -110,16 +110,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import ProjectCard from './widgets/ProjectCard.vue'
 import ProjectRow from '@/views/projects/widgets/ProjectRow.vue'
 import ProjectForm from '@/views/projects/widgets/ProjectForm.vue'
 import SearchInput from '@/components/SearchInput.vue'
 import StatusToggle from '@/components/StatusToggle.vue'
 import Pagination from '@/components/Pagination.vue'
-import { View, Edit } from '@element-plus/icons-vue'
-import type { Project, User } from '@/types'
-import { onMounted } from 'vue'
 import { useMeStore } from '@/store/meStore'
 import { useUsersStore } from '@/store/userStore'
 import { useMyProjectStore } from '@/store/myProjectStore'
@@ -153,7 +150,7 @@ const searchString = ref('');
 // 模拟数据
 const mockUser: User = computed(() => meStore.me)
 
-const mockProjects: Project[] = computed(() => myProjectStore.projects)
+const mockProjects: Project[] = computed(() => myProjectStore.getProjects)
 
 const filteredProjects = computed(() => {
   return mockProjects.value.filter(project => {
@@ -171,7 +168,7 @@ const pageProjects = computed(() => {
 // 计算属性
 const managedProjects = computed(() => {
     console.log(mockProjects.value);
-    return mockProjects.value.filter(p => p.leaderId === mockUser.value.id)
+    return mockProjects.value.filter(p => p.leader.id === mockUser.value.id)
 })
 
 const participatedProjects = computed(() => 
@@ -233,8 +230,11 @@ const handleSubmit = async (form: Project) => {
     let data;
     if (formType.value === 1) {
       data = await projectService.updateProject(form.id!, form);
-    } else {
+    } else if (formType.value === 3) {
       data = await projectService.createProject(form);
+    } else {
+      ElMessage.error('添加失败');
+      return;
     }
     ElMessage.success('添加项目[' + data.id + ']成功');
     myProjectStore.refetchProjects()
@@ -253,6 +253,8 @@ const handleSubmit = async (form: Project) => {
 onMounted(() => {
   updateTime()
   setInterval(updateTime, 1000)
+  usersStore.refetchUsers()
+  myProjectStore.refetchProjects()
 })
 </script>
 

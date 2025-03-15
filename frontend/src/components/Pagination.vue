@@ -1,15 +1,15 @@
 <template>
   <div class="mt-4 flex items-center justify-between">
-    <span class="text-sm text-gray-600">
+    <span class="text-sm text-gray-600 truncate" >
       共 {{ total }} 条记录，当前显示 {{ (currentPage - 1) * pageSize + 1 }}-{{ currentPage * pageSize }} 条
     </span>
-    <div class="flex items-center gap-4">
-      <span class="text-sm text-gray-600">
-        每页显示
+    <div class="flex items-center gap-4" >
+      <span class="text-sm text-gray-600 min-w-max">
+        每页显示 
       </span>
       <el-select
         v-model="pageSize"
-        class="w-20"
+        class="min-w-20"
         @change="emit('update:pageSize', $event)"
       >
         <el-option

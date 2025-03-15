@@ -1,5 +1,5 @@
 <template>
-  <div class="employee-list">
+  <div >
     <!-- 面包屑导航 -->
     <Breadcrumb label="Users" />
 
@@ -29,7 +29,7 @@
       </div>
 
       <!-- 用户列表 -->
-      <employee-row :data="pageUsers" @edit-employee="handleEdit" @delete-employee="handleDelete" />
+      <employee-row :data="pageUsers" @edit-employee="handleEdit" @delete-employee="handleDelete" @sort-employee="handleSort"/>
 
       <!-- 分页 -->
       <pagination v-model:current-page="currentPage" v-model:page-size="pageSize"
@@ -42,14 +42,8 @@
   </div>
 </template>
 
-<style scoped>
-.employee-list {
-  padding: 24px;
-}
-</style>
-
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, onMounted } from 'vue';
 import { User, UserFilled, Promotion, TrendCharts } from '@element-plus/icons-vue';
 import StatisticsCard from '@/components/StatisticsCard.vue';
 import AddButton from '@/components/AddButton.vue';
@@ -63,6 +57,7 @@ import { PAGE_SIZES, USER_STATUS, USER_ROLES } from '@/utils/constants';
 import { useUsersStore } from '@/store/userStore';
 import { employeeService } from '@/services/employees/employeeService';
 import { ElMessageBox, ElMessage } from 'element-plus';
+import { useMeStore } from '@/store/meStore';
 
 const usersStore = useUsersStore();
 const users = computed(() => usersStore.getUsers);
@@ -121,6 +116,7 @@ const filteredUsers = computed(() => {
 });
 
 const pageUsers = computed(() => {
+  console.log("xx");
   return filteredUsers.value.slice((currentPage.value - 1) * pageSize.value, currentPage.value * pageSize.value);
 });
 
@@ -171,6 +167,8 @@ const handleSubmit = async (form) => {
       ElMessage.success('添加员工[' + data.employeeId + ']成功');
     }
     usersStore.refetchUsers()
+    const meStore = useMeStore();
+    meStore.refetchMe();
   } catch {
     ElMessage.error('添加失败');
   } finally {
@@ -179,14 +177,6 @@ const handleSubmit = async (form) => {
       loading.value = false;
     }, 500);
   }
-
-  // formRef.value.validate(async (valid) => {
-  //   if (valid) {
-  //   } else {
-  //     ElMessage.error('表单验证失败');
-  //     return false; // 阻止提交
-  //   }
-  // });
 }
 
 const handleClose = () => {
@@ -194,4 +184,18 @@ const handleClose = () => {
   dialogVisible.value = false;
 }
 
+const handleSort = (sort) => {
+  const { prop, order } = sort;
+  if (order === 'ascending') {
+    users.value.sort((a, b) => a[prop] > b[prop] ? 1 : -1);
+  } else if (order === 'descending') {
+    users.value.sort((a, b) => a[prop] < b[prop] ? 1 : -1);
+  }
+  console.log(users.value);
+};
+
+
+onMounted(() => {
+  usersStore.refetchUsers()
+})
 </script>

@@ -7,17 +7,7 @@ import { PROJECT_STATUS } from '@/utils/constants';
 
 export const useProjectsStore = defineStore('projects', {
   state: () => ({
-    projects: [{
-      id: -1,
-      name: '',
-      description: '',
-      startDate: '',
-      endDate: '',
-      status: PROJECT_STATUS.ACTIVE,
-      progress: 0,
-      leaderId: -1,
-      members: [],
-    }]
+    projects: []
   }),
   getters: {
     getProjects: (state) => state.projects,

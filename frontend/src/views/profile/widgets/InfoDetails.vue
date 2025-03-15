@@ -26,7 +26,7 @@
               {{ employee.role }}
             </el-descriptions-item>
             <el-descriptions-item label="状态">
-              <el-tag :type="getStatusType(employee.status)">
+              <el-tag :type="employee.status === USER_STATUS.ACTIVE ? 'success' : 'info'">
                 {{ employee.status }}
               </el-tag>
             </el-descriptions-item>
@@ -34,7 +34,7 @@
               {{ employee.email }}
             </el-descriptions-item>
             <el-descriptions-item label="入职时间" :span="2">
-              {{ employee.joinDate || '暂无' }}
+              {{ employee.joinDate?.split('T')[0] || '暂无' }}
             </el-descriptions-item>
           </el-descriptions>
         </el-card>
@@ -43,20 +43,12 @@
 <script setup lang="ts">
 import type { Employee } from '@/utils/types/employee'
 import { ref } from 'vue'
+import { USER_STATUS } from '@/utils/constants'
+
 
 const props = defineProps<{
     employee: Employee
 }>()
-
-const getStatusType = (status: string) => {
-    const types = {
-        'ACTIVE': 'success',
-        'INACTIVE': 'info',
-        'SUSPENDED': 'warning',
-        'TERMINATED': 'danger'
-    }
-    return types[status] || 'info'
-}
 
 const emit = defineEmits(['edit-info']);
 

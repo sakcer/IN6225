@@ -1,44 +1,43 @@
 <template>
-  <div class="project-list">
+  <div >
     <!-- 面包屑导航 -->
     <Breadcrumb label="Projects" />
 
     <h1 class="text-3xl font-bold mb-6">Projects</h1>
 
-    <div class="mb-6 flex flex-wrap gap-4">
-      <!-- 状态切换 -->
-      <status-toggle v-model="status" :status="PROJECT_STATUS" />
+    <el-card shadow="hover" class="mb-6">
 
-      <!-- 搜索框 -->
-      <search-input v-model="searchQuery" placeholder="Search projects" />
+      <!-- <div class="mb-6 flex flex-wrap gap-4 items-center"> -->
+      <div class="w-full mb-6">
+        <!-- 状态切换 -->
+        <div class="flex items-center mb-4">
+        <status-toggle v-model="status" :status="PROJECT_STATUS" />
 
-      <!-- 添加项目按钮 -->
-      <div class="ml-auto">
-        <add-button button-text="Add Project"
-        @add="handleAddProject"/>
+        <div class="flex-grow ml-4">
+        <!-- 搜索框 -->
+        <search-input v-model="searchQuery" placeholder="Search projects" />
+        </div>
+        </div>
+
+        <!-- 添加项目按钮 -->
+        <div class="flex justify-end">
+          <add-button button-text="Add Project"
+          @add="handleAddProject"/>
+        </div>
       </div>
-    </div>
 
-    <!-- 项目卡片网格 -->
-    <!-- <el-row :gutter="20" max-height="300px">
-      <el-col v-for="project in filteredProjects" :key="project.id" :xs="24" :sm="12" :md="8" :lg="6" class="mb-4">
-        <project-card :users="users" :project="project" v-model:dialogVisible="dialogVisible" v-model:isEdit="isEdit"
-          v-model:form="form" />
-      </el-col>
-    </el-row> -->
-
-    <div class="mb-6">
       <!-- 列表视图 -->
       <project-row :projects="pageProjects" :users="users" :me="me" 
       @view-project="handleViewProject"
       @edit-project="handleEditProject"
       @delete-project="handleDeleteProject"
+      @sort-project="handleSort"
       />
-    </div>
 
-    <pagination v-model:current-page="currentPage" v-model:page-size="pageSize"
-    :total="total" />
+      <pagination v-model:current-page="currentPage" v-model:page-size="pageSize"
+      :total="total" />
 
+    </el-card>
 
     <!-- 添加/编辑项目对话框 -->
     <project-form v-model:dialogVisible="dialogVisible" 
@@ -46,6 +45,7 @@
       :form="form" 
       :me="me"
       :users="users"
+      :leaders="leaders"
       @close-project="handleClose"
       @submit-project="handleSubmit" />
 
@@ -61,7 +61,6 @@ import ProjectCard from './widgets/ProjectCard.vue'
 import ProjectForm from './widgets/ProjectForm.vue'
 import Pagination from '@/components/Pagination.vue'
 import ProjectRow from './widgets/ProjectRow.vue'
-import { employeeService } from '@/services/employees/employeeService'
 import { projectService } from '@/services/projects/projectService'
 import { PROJECT_STATUS } from '@/utils/constants'
 import { reactive, ref, computed, watch, onMounted } from 'vue'
@@ -72,6 +71,7 @@ import { useProjectsStore } from '@/store/projectStore'
 import { useUsersStore } from '@/store/userStore'
 import { useMeStore } from '@/store/meStore'
 import { PAGE_SIZES } from '@/utils/constants'
+import { useLeadersStore } from '@/store/leaderStore'
 
 // 状态管理
 const status = ref(PROJECT_STATUS.ALL)
@@ -81,8 +81,10 @@ const formType = ref(0)
 
 const projectsStore = useProjectsStore()
 const usersStore = useUsersStore()
+const leadersStore = useLeadersStore()
 const meStore = useMeStore()
 const users = computed(() => usersStore.getUsers)
+const leaders = computed(() => leadersStore.getLeaders)
 const projects = computed(() => projectsStore.getProjects)
 const me = computed(() => meStore.getMe)
 
@@ -99,7 +101,7 @@ const form = ref({
   status: PROJECT_STATUS.ACTIVE,
   progress: 0,
   dateRange: [],
-  leaderId: 0,
+  leader: {},
   memberIds: []
 })
 
@@ -151,6 +153,7 @@ const handleDeleteProject = async (row) => {
 
 const handleAddProject = () => {
   console.log("处理添加项目的逻辑")
+  console.log(projects.value);
   formType.value = 3;
   dialogVisible.value = true
 }
@@ -187,9 +190,24 @@ const handleSubmit = async (form) => {
   } finally {
     setTimeout(() => {
       dialogVisible.value = false;
-      // loading.value = false;
     }, 500);
   }
 }
 
+const handleSort = (sort) => {
+  const { prop, order } = sort;
+  console.log(prop, order);
+  if (order === 'ascending') {
+    projects.value.sort((a, b) => a[prop] > b[prop] ? 1 : -1);
+  } else if (order === 'descending') {
+    projects.value.sort((a, b) => a[prop] < b[prop] ? 1 : -1);
+  }
+}
+
+
+onMounted(() => {
+  usersStore.refetchUsers()
+  projectsStore.refetchProjects()
+  leadersStore.refetchLeaders()
+})
 </script>

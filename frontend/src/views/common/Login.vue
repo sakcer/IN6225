@@ -144,11 +144,11 @@ const handleLogin = async () => {
       await meStore.refetchMe()
       await usersStore.refetchUsers()
       await projectsStore.refetchProjects()
-      await myProjectStore.refetchProjects()
+      // await myProjectStore.refetchProjects()
     } else {
-      await myProjectStore.refetchProjects()
-      await usersStore.refetchUsers()
       await meStore.refetchMe()
+      await usersStore.refetchUsers()
+      await myProjectStore.refetchProjects()
     }
 
     ElMessage.success('登录成功')

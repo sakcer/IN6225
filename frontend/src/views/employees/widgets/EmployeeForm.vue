@@ -4,7 +4,7 @@
 
       <el-row :gutter="20">
         <el-col :span="12">
-          <el-form-item label="姓名" prop="name">
+          <el-form-item label="姓名" prop="name" >
             <el-input v-model="form.name" placeholder="请输入姓名" />
           </el-form-item>
         </el-col>

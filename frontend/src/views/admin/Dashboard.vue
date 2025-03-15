@@ -1,5 +1,7 @@
 <template>
-  <div class="dashboard">
+  <div>
+    <Breadcrumb label="Dashboard" />
+
     <el-row :gutter="20">
       <el-col v-for="(item, index) in statsData" :key="index" :span="6">
         <el-card shadow="hover">
@@ -45,6 +47,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from 'vue'
 import { User, Box, Calendar, Promotion, PieChart, TrendCharts } from '@element-plus/icons-vue'
+import Breadcrumb from '@/components/Breadcrumb.vue'
 import * as echarts from 'echarts'
 import { useUsersStore } from '@/store/userStore'
 import { useProjectsStore } from '@/store/projectStore'

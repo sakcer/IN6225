@@ -26,11 +26,11 @@
     <!-- 项目负责人 -->
     <div class="flex items-center mb-4">
       <span class="text-sm text-gray-600 mr-2">Leader:</span>
-      <el-tooltip :content="users.find(user => user.id === project.leaderId)?.name" placement="top">
+      <el-tooltip :content="project.leader.name" placement="top">
         <!-- <el-avatar :size="32" :src="project.leader.avatar" -->
-        <el-avatar :size="32" :src="users.find(user => user.id === project.leaderId)?.avatar"
-          :style="{ backgroundColor: getAvatarColor(users.find(user => user.id === project.leaderId)?.name || '') }">
-          {{ getAvatarText(users.find(user => user.id === project.leaderId)?.name) }}
+        <el-avatar :size="32" :src="project.leader.avatar"
+          :style="{ backgroundColor: getAvatarColor(project.leader.name) }">
+          {{ getAvatarText(project.leader.name) }}
         </el-avatar>
       </el-tooltip>
     </div>
@@ -66,7 +66,7 @@
           <el-button type="info" :icon="View" circle @click="emitEvent('view-project', project)" />
         </el-tooltip>
         <el-tooltip content="Edit Project" placement="top">
-          <el-button type="primary" :icon="Edit" circle @click="emitEvent('edit-project', project)" />
+          <el-button type="primary" :icon="Edit" circle @click="emitEvent('edit-project', project)" :disabled="me.id !== project.leader.id"/>
         </el-tooltip>
       </el-button-group>
     </div>
@@ -88,6 +88,7 @@ import { useUsersStore } from '@/store/userStore';
 defineProps<{
   project: Project;
   users: Employee[];
+  me: Employee;
 }>();
 
 const emit = defineEmits(['edit-project', 'view-project']);

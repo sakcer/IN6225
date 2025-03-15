@@ -13,13 +13,21 @@ export const useMeStore = defineStore('me', {
     getMe: (state) => state.me,  // getter 方法
   },
   actions: {
+    clearMe() {
+      this.me = {};
+      this.role = USER_ROLES.USER;
+      this.token = null
+    },
+    setMe(data: any) {
+      this.me = data.user;
+      this.role = data.role;
+      this.token = data.token;
+    },
     async refetchMe() {
       try { 
-        const res = await employeeService.getEmployeeById(localStorage.getItem('id'));
+        const res = await employeeService.getEmployeeById(this.me.id);
         this.me = res;
         this.role = res.role;
-        this.token = localStorage.getItem('token');
-
       } catch (error) {
         console.error("Failed to fetch user info:", error);
       }

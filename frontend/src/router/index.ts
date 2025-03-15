@@ -33,12 +33,12 @@ const adminRoutes = [
         component: () => import('@/views/profile/Profile.vue'),
         meta: { title: '个人信息', icon: 'User' }
       },
-      {
-        path: 'user',
-        name: 'UserList',
-        component: () => import('@/views/user/Dashboard.vue'),
-        meta: { title: '用户管理', icon: 'User' }
-      },
+    //   {
+    //     path: 'user',
+    //     name: 'UserList',
+    //     component: () => import('@/views/user/Dashboard.vue'),
+    //     meta: { title: '用户管理', icon: 'User' }
+    //   },
     ]
   }
 ]
@@ -48,6 +48,7 @@ const employeeRoutes = [
     path: '/employee',
     component: () => import('@/layouts/DefaultLayout.vue'),
     redirect: '/employee/dashboard',
+    meta: {requiresEmployee: true},
     children: [
       {
         path: 'dashboard',
@@ -89,36 +90,37 @@ const router = createRouter({
   ]
 })
 
-
 router.beforeEach((to, from, next) => {
+  const meStore = useMeStore();
+  const { role, token } = meStore;
 
-    const meStore = useMeStore();
-    const userRole = meStore.role;
-    const isAdmin = userRole === USER_ROLES.ADMIN;
+  const isLogin = !!token;
+  const isAdmin = role === USER_ROLES.ADMIN;
+  console.log(role, token);
 
-    const token = meStore.token;
-    const isLogin = !!token;
-    console.log(to.path);
+  if (!isLogin && to.path !== '/login') {
+    console.log('Redirecting to login');
+    return next({ path: '/login' });
+  }
 
-    if (to.path !== '/login' && !isLogin) {
-        console.log('login');
-        next({ path: '/login' })
-    } else if (!isAdmin && to.meta.requiresAdmin) {
-        console.log('admin');
-        next({path: '/NotFound'});
-    } else if (to.path === '/') {
-        console.log('/');
-        if (isAdmin) {
-            next({path: '/admin/dashboard'})
-        } else {
-            next({path: '/employee/dashboard'})
-        }
-    } else {
-        console.log('employee');
-        next()
-    }
+  if (to.meta.requiresAdmin && !isAdmin) {
+    console.log('Admin access required');
+    return next({ path: '/NotFound' });
+  }
 
-})
+  if (to.meta.requiresEmployee && isAdmin) {
+    console.log('Employee access required');
+    return next({ path: '/NotFound' });
+  }
+
+  if (to.path === '/') {
+    console.log('Redirecting based on role');
+    return next({ path: isAdmin ? '/admin/dashboard' : '/employee/dashboard' });
+  }
+
+  console.log('Proceeding to', to.path);
+  next();
+});
 
 export default router 
 export { adminRoutes, employeeRoutes };

@@ -27,10 +27,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { Message, User, Calendar, Plus } from '@element-plus/icons-vue'
-import type { Employee } from '@/utils/types/employee'
-import { getAvatarColor, getAvatarText } from '@/utils/avatar'
+import { ref, computed, onMounted } from 'vue'
 import { useMeStore } from '@/store/meStore'
 import InfoCard from './widgets/InfoCard.vue'
 import InfoDetails from './widgets/InfoDetails.vue'
@@ -67,4 +64,7 @@ const handleSave = async () => {
   }
 }
 
+onMounted(() => {
+  meStore.refetchMe()
+})
 </script>

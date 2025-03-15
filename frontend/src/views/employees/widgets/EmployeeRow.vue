@@ -1,6 +1,6 @@
 <template>
-<el-table :data="data">
-  <el-table-column label="FULL NAME" min-width="200">
+<el-table :data="data" @sort-change="emitEvent('sort-employee', $event)">
+  <el-table-column label="FULL NAME" prop="name" min-width="200" sortable>
       <template #default="{ row }">
         <div class="flex items-center gap-2">
           <el-avatar :size="32" :style="{ backgroundColor: getAvatarColor(row.name) }">
@@ -13,22 +13,22 @@
         </div>
       </template>
     </el-table-column>
-    <el-table-column prop="employeeId" label="EID" min-width="100" />
-    <el-table-column prop="email" label="EMAIL" min-width="200" />
-    <el-table-column prop="department" label="DEPARTMENT" min-width="150">
+    <el-table-column prop="employeeId" label="EID" min-width="100" sortable/>
+    <el-table-column prop="email" label="EMAIL" min-width="200" sortable/>
+    <el-table-column prop="department" label="DEPARTMENT" min-width="150" sortable>
       <template #default="{ row }">
         <span v-if="row.department">{{ row.department }}</span>
         <span v-else class="text-gray-500">No department</span>
       </template>
     </el-table-column>
-    <el-table-column label="ROLE" min-width="120">
+    <el-table-column label="ROLE" prop="role" min-width="120" sortable>
       <template #default="{ row }">
         <el-tag :type="row.role === USER_ROLES.ADMIN ? 'danger' : row.role === USER_ROLES.OWNER ? 'primary' : 'info'" effect="plain">
           {{ row.role }}
         </el-tag>
       </template>
     </el-table-column>
-    <el-table-column label="STATUS" width="100">
+    <el-table-column label="STATUS" prop="status" width="100" sortable>
       <template #default="{ row }">
         <el-tag :type="row.status === USER_STATUS.ACTIVE ? 'success' : 'info'" effect="light" size="small">
           {{ row.status || USER_STATUS.INACTIVE }}
@@ -63,7 +63,7 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['edit-employee', 'delete-employee']);
+const emit = defineEmits(['edit-employee', 'delete-employee', 'sort-employee']);
 const emitEvent = (event: string, row: any) => {
   emit(event, row);
 };

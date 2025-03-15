@@ -33,24 +33,24 @@
 
       <!-- 项目负责人 -->
       <el-form-item label="Leader" prop="leader">
-        <el-select v-model="form.leaderId" class="w-full" filterable  :disabled="me.role !== USER_ROLES.ADMIN || formType === 0">
-          <el-option v-for="user in users" :key="user.id" :label="user.name" :value="user.id">
+        <el-select v-model="form.leader.id" class="w-full" filterable  :disabled="me.role !== USER_ROLES.ADMIN || formType === 0">
+          <el-option v-for="leader in leaders" :key="leader.id" :label="leader.name" :value="leader.id">
             <div class="flex items-center">
-              <el-avatar :size="24" :style="{ backgroundColor: getAvatarColor(user.name) }" class="mr-2">
-                {{ getAvatarText(user.name) }}
+              <el-avatar :size="24" :src="leader.avatar" :style="{ backgroundColor: getAvatarColor(leader.name) }" class="mr-2">
+                {{ getAvatarText(leader.name) }}
               </el-avatar>
-              {{ user.name }}
+              {{ leader.name }}
             </div>
           </el-option>
         </el-select>
       </el-form-item>
 
       <!-- 项目成员 -->
-      <el-form-item label="Members" prop="members">
+      <el-form-item label="Members" prop="memberIds">
         <el-select v-model="form.memberIds" multiple filterable class="w-full"  :disabled="formType === 0">
           <el-option v-for="user in users" :key="user.id" :label="user.name" :value="user.id">
             <div class="flex items-center">
-              <el-avatar :size="24" :style="{ backgroundColor: getAvatarColor(user.name) }" class="mr-2">
+              <el-avatar :size="24" :src="user.avatar" :style="{ backgroundColor: getAvatarColor(user.name) }" class="mr-2">
                 {{ getAvatarText(user.name) }}
               </el-avatar>
               {{ user.name }}
@@ -63,7 +63,9 @@
     <template #footer>
       <div class="flex justify-end gap-2">
         <el-button @click="handleClose">取消</el-button>
-        <el-button type="primary" @click="handleSubmit">确定</el-button>
+        <template v-if="formType === 1 || formType === 2"> 
+          <el-button type="primary" @click="handleSubmit">确定</el-button>
+        </template>
       </div>
     </template>
   </el-dialog>
@@ -83,7 +85,8 @@ const props = defineProps<{
   formType: number;
   form: ProjectForm;
   users: Employee[];
-  me: object;
+  leaders?: Employee[];
+  me: Employee;
 }>();
 
 const formRef = ref<InstanceType<typeof ElForm>>()
@@ -103,7 +106,9 @@ const handleSubmit = () => {
 }
 
 const handleClose = () => {
+  console.log(props.form);
   formRef.value?.resetFields();
+  console.log(props.form);
   emit('close-project', props.form);
 }
 

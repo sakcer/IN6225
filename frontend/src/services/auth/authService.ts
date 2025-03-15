@@ -12,17 +12,8 @@ export const authService = {
 
 
     const meStore = useMeStore();
-    meStore.setMe(response.data.user);
-    console.log(meStore.getMe);
+    meStore.setMe(response.data);
 
-    if (response.data) {
-        localStorage.setItem('token', response.data.token);
-        localStorage.setItem('userInfo', JSON.stringify(response.data.user));
-        localStorage.setItem('role', response.data.role);
-        localStorage.setItem('id', response.data.user.id);
-    }
-    console.log(localStorage);
-    console.log(response.data);
     return response.data;
   },
 }; 
