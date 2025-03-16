@@ -49,12 +49,15 @@ public class UserService {
     }
 
     public User updatePassword(Long id, PasswordDTO passwordDTO) {
+        User user = userRepository.findById(id).orElse(null);
+        if (!passwordDTO.getCurrentPassword().equals(user.getPassword())) {
+            throw new EntityNotFoundException("Password Incorrect");
+        }
         if (passwordDTO.getNewPassword().equals(passwordDTO.getCurrentPassword())) {
             throw new EntityNotFoundException("Password cannot be same");
         }
         if(passwordDTO.getNewPassword().equals(passwordDTO.getConfirmPassword())){
             if (userRepository.existsById(id)) {
-                User user = userRepository.findById(id).orElse(null);
                 user.setPassword(passwordDTO.getNewPassword());
                 return userRepository.save(user);
             } else {

@@ -1,6 +1,5 @@
 package com.in6225.project.controller;
 
-import com.in6225.project.dto.ProjectDTO;
 import com.in6225.project.entity.Project;
 import com.in6225.project.service.ProjectService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +38,7 @@ public class ProjectController {
 //    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<Project> addProject(@RequestBody Project project) {
 
+        System.out.println(project);
         return ResponseEntity.status(HttpStatus.CREATED).body(projectService.addProject(project));
     }
 
@@ -58,4 +58,8 @@ public class ProjectController {
         return ResponseEntity.ok(projectService.updateProject(project));
     }
 
+    @GetMapping("/all/{id}")
+    public ResponseEntity<?> getAllProjectsByUserId(@PathVariable Long id) {
+        return ResponseEntity.ok(projectService.getAllProjectsByUserId(id));
+    }
 }

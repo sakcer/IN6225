@@ -1,7 +1,9 @@
 package com.in6225.project.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.Getter;
@@ -36,6 +38,9 @@ public class User {
     private String position;
     private int salary;
 
+    @ManyToMany(mappedBy = "members")  // 由 Project 端维护
+    @JsonIgnore
+    private List<Project> projects = new ArrayList<>();
 
    @PrePersist
     public void init() {
@@ -72,7 +77,7 @@ public class User {
 
     @Getter
     public enum UserRole {
-        OWNER("OWNER"),
+        LEADER("LEADER"),
         ADMIN("ADMIN"),
         USER("USER");
 

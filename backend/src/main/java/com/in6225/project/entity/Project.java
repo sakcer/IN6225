@@ -9,10 +9,10 @@ import lombok.NoArgsConstructor;
 import org.hibernate.engine.jdbc.connections.internal.UserSuppliedConnectionProviderImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.lang.reflect.Type;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@NoArgsConstructor
 @Entity
 @Table(name = "projects")
 @Data
@@ -23,82 +23,42 @@ public class Project {
 
     private String name;
     private String description;
+    @Enumerated(EnumType.STRING)
     private ProjectStatus status;
+
     private int progress;
     @Temporal(TemporalType.DATE)
     private Date startDate;
     @Temporal(TemporalType.DATE)
     private Date endDate;
 
-    private Long leaderId;
-    private Set<Long> memberIds;
+//    private Long leaderId;
 
-//    @ManyToOne(fetch = FetchType.EAGER)
-//    @JoinColumn(name = "leader_id", nullable = false)
-//    @JsonIgnore
-//    private User leader;
-//
-//    @OneToMany(mappedBy = "project")
-//    @JsonIgnore
-//    private List<ProjectUser> projectUsers = new ArrayList<>();
+    @ManyToOne
+    @JoinColumn(name = "leader_id")
+    @JsonIgnoreProperties({"email", "password", "role", "status", "title", "avatar", "department", "joinDate", "position", "salary", "projects"})
+    private User leader;
 
-//    @ManyToMany(fetch = FetchType.LAZY)
-//    @JoinTable(
-//            name = "project_members",
-//            joinColumns = @JoinColumn(name = "project_id"),
-//            inverseJoinColumns = @JoinColumn(name = "user_id")
-//    )
-//    @JsonIgnore
-//    @JsonIgnoreProperties("members")
-//    private Set<User> members;
+    @ManyToMany
+    @JoinTable(
+            name = "project_user",
+            joinColumns = @JoinColumn(name = "project_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    @JsonIgnoreProperties({"email", "password", "role", "status", "title", "avatar", "department", "joinDate", "position", "salary", "projects"})
+    private List<User> members = new ArrayList<>();
 
     public enum ProjectStatus {
         ACTIVE, COMPLETED
     }
 
-//    @JsonSetter("leaderId")
-//    public void setLeaderId(Long leaderId) {
-//        this.leader = new User();
-//        leader.setId(leaderId);
-//    }
-//
-//    @JsonSetter("projectIds")
-//    public void setLeaderId(Long leaderId) {
-//        this.leader = new User();
-//        this.leader.setId(leaderId);
-//    }
-//    public Project(
-//            @JsonProperty("leaderId") Long leaderId,
-//            @JsonProperty("memberIds") Set<Long> memberIds) {
-//
-//        this.leader = new User();
-//        this.leader.setId(leaderId);
-//
-//        this.projectUsers = new ArrayList<>() {};
-//        for (Long memberId : memberIds) {
-//            ProjectUser projectUser = new ProjectUser();
-//            User user = new User();
-//            user.setId(memberId);
-//            projectUser.setUser(user);
-//            this.projectUsers.add(projectUser);
-//        }
-//    }
-
-//    public Project() {
-//    }
-
-//    @JsonGetter("leaderId")
-//    public Long getLeaderId() {
-//        return this.leader.getId();
-//    }
-//
-//    @JsonGetter("memberIds")
-//    public List<Long> getMemberIds() {
-//        return this.projectUsers.stream()
-//                .map(projectUser -> projectUser.getProject().getId())
-//                .collect(Collectors.toList());
-//    }
-
+    @PrePersist
+    public void init() {
+        if (this.status == null) {
+            this.status = ProjectStatus.ACTIVE;
+        }
+        this.startDate = new Date();
+    }
 }
 
 

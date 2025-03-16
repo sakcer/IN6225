@@ -1,8 +1,6 @@
 package com.in6225.project.service;
 
-import com.in6225.project.dto.ProjectDTO;
 import com.in6225.project.entity.Project;
-import com.in6225.project.entity.ProjectUser;
 import com.in6225.project.entity.User;
 import com.in6225.project.repository.ProjectRepository;
 import com.in6225.project.repository.UserRepository;
@@ -10,10 +8,7 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class ProjectService {
@@ -31,28 +26,11 @@ public class ProjectService {
         return projectRepository.findAll();
     }
 
-    public Project addProject(Project project) {
-//        Project project = new Project();
-//        project.setId(projectDTO.getId());
-//        project.setName(projectDTO.getName());
-//        project.setLeader(userRepository.findById(projectDTO.getLeaderId()).orElse(null));
-//        project.setDescription(projectDTO.getDescription());
-//        project.setProgress(projectDTO.getProgress());
-//        project.setStatus(projectDTO.getStatus());
-//        project.setEndDate(projectDTO.getEndDate());
-//        project.setStartDate(projectDTO.getStartDate());
-//
-//        List<ProjectUser> projectUsers = new ArrayList<>() {};
-//        for (Long memberId : projectDTO.getMemberIds()) {
-//            ProjectUser projectUser = new ProjectUser();
-//            User user = userRepository.findById(memberId).orElse(null);
-//            projectUser.setUser(user);
-//            projectUser.setProject(project);
-//            projectUsers.add(projectUser);
-//        }
-//        project.setProjectUsers(projectUsers);
+    public List<Project> getAllProjectsByUserId(Long id) {
+        return projectRepository.findByUserId(id);
+    }
 
-        System.out.println(project);
+    public Project addProject(Project project) {
         return projectRepository.save(project);
     }
 
@@ -62,26 +40,6 @@ public class ProjectService {
 
     public Project updateProject(Project project) {
         if (projectRepository.existsById(project.getId())) {
-
-//            Project project = new Project();
-//            project.setId(projectDTO.getId());
-//            project.setName(projectDTO.getName());
-//            project.setLeader(userRepository.findById(projectDTO.getLeaderId()).orElse(null));
-//            project.setDescription(projectDTO.getDescription());
-//            project.setProgress(projectDTO.getProgress());
-//            project.setStatus(projectDTO.getStatus());
-//            project.setEndDate(projectDTO.getEndDate());
-//            project.setStartDate(projectDTO.getStartDate());
-//
-//            List<ProjectUser> projectUsers = new ArrayList<>() {};
-//            for (Long memberId : projectDTO.getMemberIds()) {
-//                ProjectUser projectUser = new ProjectUser();
-//                User user = userRepository.findById(memberId).orElse(null);
-//                projectUser.setUser(user);
-//                projectUsers.add(projectUser);
-//            }
-//            project.setProjectUsers(projectUsers);
-
             return projectRepository.save(project);
         } else {
             throw new EntityNotFoundException("User not found for id " + project.getId());
