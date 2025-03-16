@@ -23,7 +23,7 @@
     </el-table-column>
     <el-table-column label="ROLE" prop="role" min-width="120" sortable>
       <template #default="{ row }">
-        <el-tag :type="row.role === USER_ROLES.ADMIN ? 'danger' : row.role === USER_ROLES.OWNER ? 'primary' : 'info'" effect="plain">
+        <el-tag :type="row.role === USER_ROLES.ADMIN ? 'danger' : row.role === USER_ROLES.LEADER ? 'primary' : 'info'" effect="plain">
           {{ row.role }}
         </el-tag>
       </template>
@@ -54,28 +54,15 @@
 import { getAvatarColor, getAvatarText } from '@/utils/avatar';
 import { Edit, Delete } from '@element-plus/icons-vue';
 import { USER_STATUS, USER_ROLES } from '@/utils/constants';
-import type { Employee } from '@/utils/types';
+import type { Employee } from '@/utils/types/employee';
 
-const props = defineProps({
-  data: {
-    type: Array<Employee>,
-    required: true
-  }
-});
+defineProps<{
+  data: Employee[];
+}>();
 
 const emit = defineEmits(['edit-employee', 'delete-employee', 'sort-employee']);
-const emitEvent = (event: string, row: any) => {
+const emitEvent = (event: 'edit-employee' | 'delete-employee' | 'sort-employee', row: Employee | Object) => {
   emit(event, row);
 };
-
-import { watch } from 'vue';
-import { onMounted } from 'vue';
-watch(props.data, (newVal) => {
-  console.log('data changed:', newVal);
-});
-
-onMounted(() => {
-  console.log('data changed:', props.data);
-});
 
 </script>

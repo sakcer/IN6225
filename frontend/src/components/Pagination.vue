@@ -1,11 +1,16 @@
 <template>
   <div class="mt-4 flex items-center justify-between">
-    <span class="text-sm text-gray-600 truncate" >
-      共 {{ total }} 条记录，当前显示 {{ (currentPage - 1) * pageSize + 1 }}-{{ currentPage * pageSize }} 条
+    <span class="text-sm text-gray-600 truncate">
+      <template v-if="currentPage && pageSize">
+        Total {{ total }} records, currently displaying {{ (currentPage - 1) * pageSize + 1 }}-{{ currentPage * pageSize }} records
+      </template>
+      <template v-else>
+        Loading data...
+      </template>
     </span>
-    <div class="flex items-center gap-4" >
+    <div class="flex items-center gap-4">
       <span class="text-sm text-gray-600 min-w-max">
-        每页显示 
+        Show 
       </span>
       <el-select
         v-model="pageSize"
@@ -33,19 +38,22 @@
 </template>
 
 <script setup lang="ts">
+// Import necessary libraries and constants
 import { ref } from 'vue';
 import { PAGE_SIZES } from '@/utils/constants';
 
-const props = defineProps({
-  currentPage: Number,
-  pageSize: Number,
-  total: Number
-});
+// Define props for the component
+const props = defineProps<{
+  currentPage: number, // Current page number
+  pageSize: number, // Number of items per page
+  total: number // Total number of items
+}>();
 
-const pageSize = ref(props.pageSize);
+const pageSize = ref(props.pageSize); // Local state for page size
 
+// Define emitted events
 const emit = defineEmits<{
-  (e: 'update:currentPage', value: number): void;
-  (e: 'update:pageSize', value: number): void;
+  (e: 'update:currentPage', value: number): void; // Event for updating current page
+  (e: 'update:pageSize', value: number): void; // Event for updating page size
 }>();
 </script>

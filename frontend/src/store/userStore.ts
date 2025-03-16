@@ -1,13 +1,10 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
-import type { Employee } from '@/utils/types'
+import type { Employee } from '@/utils/types/employee'
 import { employeeService } from '@/services/employees/employeeService'
-import { ElMessage } from 'element-plus';
-import { USER_STATUS } from '@/utils/constants';
 
 export const useUsersStore = defineStore('users', {
   state: () => ({
-    users: []
+    users: [] as Employee[]
   }),
   getters: {
     getUsers: (state) => state.users, 

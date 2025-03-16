@@ -20,10 +20,7 @@ export const projectRules: FormRules = {
   status: [
     { required: true, message: '请选择项目状态', trigger: 'change' }
   ],
-//   dateRange: [
-//     { required: true, message: '请选择项目起止时间', trigger: 'change' }
-//   ],
-  leaderId: [
+  leader: [
     { required: true, message: '请选择项目负责人', trigger: 'change' }
   ],
   memberIds: [
@@ -41,8 +38,8 @@ export const employeeRules: FormRules = {
     { type: 'email', message: '请输入有效的邮箱地址', trigger: ['blur', 'change'] },
   ],
   employeeId: [
-    { required: true, message: '工号不能为空', trigger: 'blur' },
-    // { pattern: /^[0-9]{6}$/, message: '工号必须是6位数字', trigger: 'blur' },
+    { required: false, message: '工号不能为空', trigger: 'blur' },
+    { pattern: /^EID_[0-9a-zA-Z]{5}$/, message: '工号必须是5位数字', trigger: 'blur' },
   ],
   role: [
     { required: true, message: '请选择角色', trigger: 'change' },
@@ -51,3 +48,16 @@ export const employeeRules: FormRules = {
     { required: true, message: '请选择状态', trigger: 'change' },
   ],
 };
+
+export const passwordRules: FormRules = {
+    currentPassword: [
+        { required: true, message: 'Current password is required' }
+    ],
+    newPassword: [
+        { required: true, message: 'New password is required' },
+        { min: 6, max: 20, message: 'Password must be between 6 and 20 characters' }
+    ],
+    confirmPassword: [
+        { required: true, message: 'Confirm password is required' },
+    ]
+}

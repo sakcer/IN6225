@@ -1,12 +1,12 @@
 import { defineStore } from 'pinia'
-import { ref, watch, computed } from 'vue'
-import type { Employee } from '@/utils/types'
+import type { Employee } from '@/utils/types/employee'
 import { employeeService } from '@/services/employees/employeeService'
+import { USER_ROLES } from '@/utils/constants'
 
 export const useMeStore = defineStore('me', {
   state: () => ({
-    me: null as Employee | null,
-    role: null as string | null,
+    me: {} as Employee,
+    role: USER_ROLES.USER,
     token: null as string | null,
   }),
   getters: {
@@ -14,9 +14,9 @@ export const useMeStore = defineStore('me', {
   },
   actions: {
     clearMe() {
-      this.me = {};
+      this.me = {} as Employee;
       this.role = USER_ROLES.USER;
-      this.token = null
+      this.token = null;
     },
     setMe(data: any) {
       this.me = data.user;
@@ -26,6 +26,7 @@ export const useMeStore = defineStore('me', {
     async refetchMe() {
       try { 
         const res = await employeeService.getEmployeeById(this.me.id);
+        console.log("res", res);
         this.me = res;
         this.role = res.role;
       } catch (error) {

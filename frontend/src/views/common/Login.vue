@@ -1,14 +1,14 @@
 <template>
   <div class="min-h-screen flex flex-col justify-center items-center bg-gray-50">
     <div class="w-full max-w-md mx-4 md:mx-auto p-8 bg-white rounded-lg shadow-lg">
-      <!-- Logo和标题 -->
+      <!-- Logo and Title -->
       <div class="text-center mb-8">
         <img src="@/assets/vue.svg" alt="Logo" class="mx-auto h-12 mb-4" />
-        <h1 class="text-2xl font-bold text-gray-800">员工管理系统</h1>
-        <p class="text-gray-500 mt-2">欢迎回来，请登录您的账号</p>
+        <h1 class="text-2xl font-bold text-gray-800">Employee Management System</h1>
+        <p class="text-gray-500 mt-2">Welcome back, please log in to your account</p>
       </div>
 
-      <!-- 登录表单 -->
+      <!-- Login Form -->
       <el-form
         ref="formRef"
         :model="loginForm"
@@ -16,23 +16,23 @@
         class="space-y-6"
         @keyup.enter="handleLogin"
       >
-        <!-- 用户名输入框 -->
+        <!-- Username Input -->
         <el-form-item prop="employeeId">
           <el-input
             v-model="loginForm.employeeId"
-            placeholder="请输入员工号"
+            placeholder="Enter Employee ID"
             :prefix-icon="User"
             size="large"
             class="w-full"
           />
         </el-form-item>
 
-        <!-- 密码输入框 -->
+        <!-- Password Input -->
         <el-form-item prop="password">
           <el-input
             v-model="loginForm.password"
             type="password"
-            placeholder="请输入密码"
+            placeholder="Enter Password"
             :prefix-icon="Lock"
             size="large"
             show-password
@@ -40,17 +40,17 @@
           />
         </el-form-item>
 
-        <!-- 记住我和忘记密码 -->
+        <!-- Remember Me and Forgot Password -->
         <div class="flex justify-between items-center">
           <el-checkbox v-model="loginForm.remember">
-            记住我
+            Remember Me
           </el-checkbox>
           <el-button type="primary" link @click="handleForgotPassword">
-            忘记密码？
+            Forgot Password?
           </el-button>
         </div>
 
-        <!-- 登录按钮 -->
+        <!-- Login Button -->
         <el-button
           type="primary"
           class="w-full"
@@ -58,30 +58,31 @@
           :loading="loading"
           @click="handleLogin"
         >
-          {{ loading ? '登录中...' : '登录' }}
+          {{ loading ? 'Logging in...' : 'Login' }}
         </el-button>
 
-        <!-- 提示信息 -->
+        <!-- Hint Information -->
         <div class="text-center text-sm text-gray-500 space-y-2">
-          <p>首次登录请使用员工号作为用户名和初始密码</p>
+          <p>For first-time login, please use your Employee ID as the username and initial password</p>
           <p>
-            遇到问题？请联系
-            <el-button type="primary" link class="px-0">系统管理员</el-button>
+            Having issues? Please contact
+            <el-button type="primary" link class="px-0">System Administrator</el-button>
           </p>
         </div>
       </el-form>
     </div>
 
-    <!-- 页脚 -->
+    <!-- Footer -->
     <div class="mt-8 text-center">
       <p class="text-gray-500 text-sm">
-        © {{ new Date().getFullYear() }} 员工管理系统. All rights reserved.
+        © {{ new Date().getFullYear() }} Employee Management System. All rights reserved.
       </p>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+// Import necessary libraries and services
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
@@ -94,6 +95,7 @@ import { useUsersStore } from '@/store/userStore'
 import { useProjectsStore } from '@/store/projectStore'
 import { useMyProjectStore } from '@/store/myProjectStore'
 
+// Store references
 const meStore = useMeStore()
 const usersStore = useUsersStore()
 const projectsStore = useProjectsStore()
@@ -102,27 +104,24 @@ const router = useRouter()
 const formRef = ref<FormInstance>()
 const loading = ref(false)
 
-
-// 登录表单数据
+// Login form data
 const loginForm = reactive({
   employeeId: '',
   password: '',
   remember: false
 })
 
-// 表单验证规则
+// Form validation rules
 const rules = {
   employeeId: [
-    { required: true, message: '请输入员工号', trigger: 'blur' },
-    // { min: 3, max: 20, message: '长度在 3 到 20 个字符', trigger: 'blur' }
+    { required: true, message: 'Please enter Employee ID', trigger: 'blur' },
   ],
   password: [
-    { required: true, message: '请输入密码', trigger: 'blur' },
-    // { min: 6, max: 20, message: '长度在 6 到 20 个字符', trigger: 'blur' }
+    { required: true, message: 'Please enter password', trigger: 'blur' },
   ]
 }
 
-// 处理登录
+// Handle login
 const handleLogin = async () => {
   if (!formRef.value) return
 
@@ -134,34 +133,33 @@ const handleLogin = async () => {
     const response = await authService.login(loginForm.employeeId, loginForm.password);
     console.log(response);
 
-    // 根据角色跳转
+    // Redirect based on role
     const isAdmin = response.user.role === USER_ROLES.ADMIN
     const redirectPath = isAdmin ? '/admin/dashboard' : '/employee/dashboard'
     router.push(redirectPath)
 
-    
+    // Refresh data based on role
     if (isAdmin) {  
       await meStore.refetchMe()
       await usersStore.refetchUsers()
       await projectsStore.refetchProjects()
-      // await myProjectStore.refetchProjects()
     } else {
       await meStore.refetchMe()
       await usersStore.refetchUsers()
       await myProjectStore.refetchProjects()
     }
 
-    ElMessage.success('登录成功')
+    ElMessage.success('Login successful')
   } catch (error) {
-    console.error('登录失败:', error)
-    ElMessage.error('用户名或密码错误')
+    console.error('Login failed:', error)
+    ElMessage.error('Incorrect username or password')
   } finally {
     loading.value = false
   }
 }
 
-// 处理忘记密码
+// Handle forgot password
 const handleForgotPassword = () => {
-  ElMessage.info('请联系系统管理员重置密码')
+  ElMessage.info('Please contact the system administrator to reset your password')
 }
 </script>

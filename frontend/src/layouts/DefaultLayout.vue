@@ -15,7 +15,7 @@
     <el-container>
       <el-header>
         <div class="flex justify-between items-center h-full">
-          <h1 class="text-xl font-bold">企业员工管理系统</h1>
+          <h1 class="text-xl font-bold">Enterprise Employee Management System</h1>
           <el-dropdown>
             <span class="flex items-center cursor-pointer">
               <el-avatar :size="32" :style="{ backgroundColor: getAvatarColor(me?.name || ''), color: '#fff' }">
@@ -25,9 +25,9 @@
             </span>
             <template #dropdown>
               <el-dropdown-menu>
-                <el-dropdown-item @click="handleProfile">个人信息</el-dropdown-item>
-                <el-dropdown-item @click="handleReturn">回到首页</el-dropdown-item>
-                <el-dropdown-item divided @click="handleLogout">退出登录</el-dropdown-item>
+                <el-dropdown-item @click="handleProfile">Profile</el-dropdown-item>
+                <el-dropdown-item @click="handleReturn">Home</el-dropdown-item>
+                <el-dropdown-item divided @click="handleLogout">Logout</el-dropdown-item>
               </el-dropdown-menu>
             </template>
           </el-dropdown>
@@ -42,9 +42,7 @@
 </template>
 
 <script setup lang="ts">
-import { Monitor, User, Folder, OfficeBuilding } from '@element-plus/icons-vue'
 import { adminRoutes, employeeRoutes } from '@/router/index'
-import { localUser } from '@/utils/localUser'
 import { getAvatarColor, getAvatarText } from '@/utils/avatar'
 import { useMeStore } from '@/store/meStore'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -61,16 +59,17 @@ const routes = isAdmin ? adminRoutes[0].children : employeeRoutes[0].children
 const router = useRouter()
 
 const handleLogout = () => {
-  ElMessageBox.confirm('确定要退出登录吗？', '提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
+  ElMessageBox.confirm('Are you sure you want to log out?', 'Prompt', {
+    confirmButtonText: 'Yes',
+    cancelButtonText: 'No',
     type: 'warning'
   }).then(() => {
     meStore.clearMe()
     router.push('/login')
-    ElMessage.success('退出登录成功')
-  }).catch(() => {
-    ElMessage.info('取消退出')
+    ElMessage.success('Logout successful')
+  }).catch((error) => {
+    console.log(error)
+    ElMessage.info('Logout canceled')
   })
 }
 

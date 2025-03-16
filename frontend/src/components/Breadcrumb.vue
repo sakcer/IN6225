@@ -1,5 +1,4 @@
 <template>
-  <!-- 面包屑导航 -->
   <div class="flex items-center mb-4">
     <el-breadcrumb separator="/">
       <el-breadcrumb-item :to="{ path: '/' }">Home</el-breadcrumb-item>

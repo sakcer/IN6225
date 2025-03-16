@@ -23,7 +23,7 @@
         <el-card shadow="hover">
           <template #header>
             <div class="flex items-center">
-              <el-icon class="mr-2"><PieChart /></el-icon> 部门人员分布
+              <el-icon class="mr-2"><PieChart /></el-icon> Department Distribution
             </div>
           </template>
           <div ref="departmentChartRef" style="height: 300px"></div>
@@ -34,7 +34,7 @@
         <el-card shadow="hover">
           <template #header>
             <div class="flex items-center">
-              <el-icon class="mr-2"><TrendCharts /></el-icon> 员工变动趋势
+              <el-icon class="mr-2"><TrendCharts /></el-icon> Employee Change Trend
             </div>
           </template>
           <div ref="trendChartRef" style="height: 300px"></div>
@@ -67,14 +67,14 @@ const newEmployees = computed(() => {
 })
 
 const statsData = computed(() => [
-  { label: '员工总数', icon: User, value: totalEmployees.value },
-  { label: '本月新入职', icon: Calendar, value: newEmployees.value },
-  { label: '部门数量', icon: Box, value: totalDepartments.value },
-  { label: '项目总数', icon: Promotion, value: totalProjects.value }
+  { label: 'Total Employees', icon: User, value: totalEmployees.value },
+  { label: 'New Employees', icon: Calendar, value: newEmployees.value },
+  { label: 'Total Departments', icon: Box, value: totalDepartments.value },
+  { label: 'Total Projects', icon: Promotion, value: totalProjects.value }
 ])
 
 const departmentData = computed(() => {
-  const counts = users.value.reduce((acc, user) => {
+  const counts = users.value.reduce<{ [key: string]: number }>((acc, user) => {
     acc[user.department] = (acc[user.department] || 0) + 1
     return acc
   }, {})
@@ -86,18 +86,18 @@ const trendData = computed(() => {
   return Array.from({ length: 7 }, (_, i) => {
     const date = new Date(today)
     date.setDate(today.getDate() - (6 - i))
-    return `${date.getMonth() + 1}月${date.getDate()}日`
+    return `${date.getMonth() + 1}/${date.getDate()}`
   })
 })
 
 const joinCounts = computed(() => {
-  const counts = trendData.value.reduce((acc, date) => ({ ...acc, [date]: 0 }), {})
+  const counts: { [key: string]: number } = trendData.value.reduce((acc, date) => ({ ...acc, [date]: 0 }), {})
   users.value.forEach(user => {
     const joinDate = new Date(user.joinDate)
-    const formattedDate = `${joinDate.getMonth() + 1}月${joinDate.getDate()}日`
+    const formattedDate = `${joinDate.getMonth() + 1}/${joinDate.getDate()}`
     if (formattedDate in counts) counts[formattedDate]++
   })
-  return trendData.value.map(date => counts[date])
+  return trendData.value.map((date: string) => counts[date])
 })
 
 const departmentChartRef = ref<HTMLElement>()
@@ -120,9 +120,12 @@ onMounted(() => {
       tooltip: { trigger: 'axis' },
       xAxis: { type: 'category', data: trendData.value },
       yAxis: { type: 'value' },
-      series: [{ name: '入职人数', type: 'line', data: joinCounts.value }]
+      series: [{ name: 'Join Count', type: 'line', data: joinCounts.value }]
     })
     watch(joinCounts, () => chart.setOption({ series: [{ data: joinCounts.value }] }))
   }
+
+  usersStore.refetchUsers()
+  projectsStore.refetchProjects()
 })
 </script>

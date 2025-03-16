@@ -9,15 +9,15 @@
       </div>
     </template>
     <span :class="['text-3xl font-bold', `text-${stat.type}`]">
-      {{ stat.value }}{{ stat.suffix || "" }}
+      {{ stat.value }}
     </span>
   </el-card>
 </template>
 
 <script setup lang="ts">
-import type { Statistic } from "@/utils/types";
+import type { Statistics } from "@/utils/types/statistics";
 
 defineProps<{
-  stat: Statistic;
+  stat: Statistics;
 }>();
 </script>

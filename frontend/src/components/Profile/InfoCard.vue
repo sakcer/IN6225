@@ -26,15 +26,16 @@
                 <el-icon class="mr-2">
                     <User />
                 </el-icon>
-                <span class="text-gray-600">工号：{{ employee.employeeId }}</span>
+                <span class="text-gray-600">Employee ID: {{ employee.employeeId }}</span>
             </div>
             <div class="flex items-center">
                 <el-icon class="mr-2">
                     <Calendar />
                 </el-icon>
-                <span class="text-gray-600">入职时间：{{ employee.joinDate?.split('T')[0] || '暂无' }}</span>
+                <span class="text-gray-600">Join Date: {{ employee.joinDate?.split('T')[0] || 'N/A' }}</span>
             </div>
         </div>
+
     </el-card>
 </template>
 
@@ -44,7 +45,7 @@ import { Message, User, Calendar } from '@element-plus/icons-vue'
 import type { Employee } from '@/utils/types/employee'
 import { USER_STATUS } from '@/utils/constants'
 
-const props = defineProps<{
+defineProps<{
     employee: Employee
 }>()
 

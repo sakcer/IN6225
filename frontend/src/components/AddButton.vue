@@ -15,7 +15,7 @@ defineProps<{
 }>();
 
 const emit = defineEmits(['add']);
-const emitEvent = (event: string) => {
+const emitEvent = (event: 'add') => {
   emit(event);
 };
 

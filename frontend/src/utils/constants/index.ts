@@ -6,27 +6,27 @@ export const AVATAR_COLORS = [
   '#909399'
 ] as const;
 
-export const USER_STATUS = {
-  ALL: 'ALL',
-  ACTIVE: 'ACTIVE',
-  INACTIVE: 'INACTIVE'
-} as const;
+export enum USER_STATUS {
+  ALL = 'ALL',
+  ACTIVE = 'ACTIVE',
+  INACTIVE = 'INACTIVE'
+}
 
-export const PROJECT_STATUS = {
-  ALL: 'ALL',
-  ACTIVE: 'ACTIVE',
-  COMPLETED: 'COMPLETED',
-} as const;
+export enum PROJECT_STATUS {
+  ALL = 'ALL',
+  ACTIVE = 'ACTIVE',
+  COMPLETED = 'COMPLETED',
+}
 
-export const USER_ROLES = {
-  OWNER: 'OWNER',
-  ADMIN: 'ADMIN',
-  USER: 'USER'
-} as const;
+export enum USER_ROLES {
+  LEADER = 'LEADER',
+  ADMIN = 'ADMIN',
+  USER = 'USER'
+}
 
 export const PAGE_SIZES = [5, 10, 20, 50, 100] as const;
 
-export enum Department {
+export enum DEPARTMENTS {
   TCH = 'TCH',
   HR = 'HR',
   SLS = 'SLS',

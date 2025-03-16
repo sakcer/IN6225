@@ -15,7 +15,8 @@
 //   await usersStore.refetchUsers();
 //   await meStore.refetchMe();
 //   await myProjectStore.refetchProjects();
-// });
+// }`);
+
 </script>
 
 <template>

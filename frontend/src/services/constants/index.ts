@@ -12,5 +12,3 @@ export const API_ENDPOINTS = {
   PROJECTS_DELETE: '/api/project',
   LOGIN: '/api/auth/login',
 } as const; 
-
-export const TOKEN = localStorage.getItem('token');

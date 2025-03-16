@@ -1,13 +1,10 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
-import type { Employee } from '@/utils/types'
-import { ElMessage } from 'element-plus';
+import type { Project } from '@/utils/types/project'
 import { projectService } from '@/services/projects/projectService';
-import { PROJECT_STATUS } from '@/utils/constants';
 
 export const useProjectsStore = defineStore('projects', {
   state: () => ({
-    projects: []
+    projects: [] as Project[]
   }),
   getters: {
     getProjects: (state) => state.projects,
