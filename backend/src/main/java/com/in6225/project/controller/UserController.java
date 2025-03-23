@@ -1,86 +1,73 @@
 package com.in6225.project.controller;
 
-import com.in6225.project.dto.PasswordDTO;
-import com.in6225.project.entity.User;
+import com.in6225.project.model.dto.MsgDTO;
+import com.in6225.project.model.dto.PwdUpdateDTO;
+import com.in6225.project.model.dto.UserBasicDTO;
+import com.in6225.project.model.dto.UserDetailsDTO;
 import com.in6225.project.security.CustomUserDetails;
 import com.in6225.project.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/v1/employees")
+@RequestMapping("/api/v1/employee")
+@Validated
 public class UserController {
 
     @Autowired
     private UserService userService;
 
     @GetMapping("/me")
-    public ResponseEntity<User> getMe() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        CustomUserDetails currentUser = (CustomUserDetails) authentication.getPrincipal();
-
-        Long userId = currentUser.getUserId();
-        Optional<User> user = userService.getUserById(userId);
-
-        return user.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    public ResponseEntity<?> getMe(@AuthenticationPrincipal CustomUserDetails currentUser) {
+        return ResponseEntity.ok(userService.getUserById(currentUser.getUserId()));
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable Long id) {
-        Optional<User> user = userService.getUserById(id);
-        return user.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
-    }
+//    @GetMapping("/{id}")
+//    public ResponseEntity<?> getUserById(@PathVariable Long id) {
+//        return ResponseEntity.ok(userService.getUserById(id));
+//    }
 
     @GetMapping("/all")
-//    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<Map<String, Object>> getAllUsers() {
-        System.out.println("XXXXXXXXX");
-        List<User> users = userService.getAllUsers();
-        System.out.println("XXXXXXXXX");
+    public ResponseEntity<?> getAllUsers() {
+        List<?> userResponseDTOSs = userService.getAllUsers();
+        return ResponseEntity.ok(userResponseDTOSs);
+    }
 
-        Map<String, Object> response = new HashMap<>();
-        response.put("users", users);
-        response.put("total", users.size());
-
-        return ResponseEntity.ok(response);
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateUser(@PathVariable Long id, @Valid @RequestBody UserBasicDTO userRequestDTO) {
+        userService.updateUser(id, userRequestDTO);
+        return ResponseEntity.ok(new MsgDTO("User updated: " + id));
     }
 
     @PostMapping
-//    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<User> addUser(@RequestBody User user) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(userService.addUser(user));
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<?> addUser(@Valid @RequestBody UserDetailsDTO userRequestDTO) {
+        userService.addUser(userRequestDTO);
+        return ResponseEntity.ok(new MsgDTO(userRequestDTO.getName() + ", add"));
     }
 
     @DeleteMapping("/{id}")
-//    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<Map<String, String>> deleteUser(@PathVariable Long id) {
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
-        Map<String, String> response = new HashMap<>();
-        response.put("message", "Delete " + id);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(new MsgDTO("User deleted: " + id));
     }
 
-
-    @PutMapping
-//    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<User> updateUser(@RequestBody User user) {
-        return ResponseEntity.ok(userService.updateUser(user));
-    }
-
-    @PostMapping("password/{id}")
-    public ResponseEntity<User> updateUserPassword(@PathVariable Long id, @RequestBody PasswordDTO passwordDTO) {
-        return ResponseEntity.ok(userService.updatePassword(id, passwordDTO));
+    @PutMapping("/{id}/password")
+    @PreAuthorize("#id == authentication.principal.userId")
+    public ResponseEntity<?> updateUserPassword(@PathVariable Long id, @Valid @RequestBody PwdUpdateDTO passwordUpdateDTO) {
+        userService.updatePassword(id, passwordUpdateDTO);
+        return ResponseEntity.ok(new MsgDTO("Password updated"));
     }
 }

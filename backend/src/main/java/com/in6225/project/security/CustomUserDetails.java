@@ -1,6 +1,6 @@
 package com.in6225.project.security;
 
-import com.in6225.project.entity.User;
+import com.in6225.project.model.entity.User;
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -8,7 +8,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Data
 public class CustomUserDetails implements UserDetails {
@@ -20,10 +19,7 @@ public class CustomUserDetails implements UserDetails {
     public CustomUserDetails(User user) {
         this.employeeId = user.getEmployeeId();
         this.password = user.getPassword();
-        this.authorities = List.of(new SimpleGrantedAuthority("ROLE_USER"));
-//        this.authorities = user.getRoles().stream()
-//                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getRole()))
-//                .collect(Collectors.toList());
+        this.authorities = List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole()));
         this.userId = user.getId();
     }
 

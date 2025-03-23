@@ -1,69 +1,146 @@
 package com.in6225.project.service;
 
-import com.in6225.project.dto.PasswordDTO;
-import com.in6225.project.entity.User;
+import com.in6225.project.model.entity.Project;
+import com.in6225.project.model.entity.User;
+import com.in6225.project.model.mapper.UserMapper;
+import com.in6225.project.model.dto.PwdUpdateDTO;
+import com.in6225.project.model.dto.UserBasicDTO;
+import com.in6225.project.model.dto.UserDetailsDTO;
+import com.in6225.project.repository.ProjectRepository;
 import com.in6225.project.repository.UserRepository;
+import com.in6225.project.security.CustomUserDetails;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
     @Autowired
     private UserRepository userRepository;
 
-    public Optional<User> getUserById(Long id) {
-        return userRepository.findById(id);
+    @Autowired
+    ProjectRepository projectRepository;
+
+    @Autowired
+    private UserMapper userMapper;
+
+    public Object getUserById(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("User not found for " + id));
+        return userMapper.toUserDetailsDTO(user);
     }
 
     public User getUserByEmployeeId(String EID) {
-        return userRepository.findByEmployeeId(EID);
-    }
-
-    public List<User> getAllUsers() {
-        try {
-            List<User> user = userRepository.findAll();
-            return user;
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
+        User user = userRepository.findByEmployeeId(EID);
+        if (user == null) {
+            throw new EntityNotFoundException("User not found for employeeId: " + EID);
         }
-        return null;
+        return user;  // 将 User 转换为 UserResponseDTO
     }
 
-    public User addUser(User user) {
-        return userRepository.save(user);
+    public List<Object> getAllUsers() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        CustomUserDetails currentUser = (CustomUserDetails) authentication.getPrincipal();
+
+        List<User> users = userRepository.findAll();
+
+        if (currentUser.getAuthorities().stream()
+                .noneMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"))) {
+            return users.stream()
+                    .map(userMapper::toUserBasicDTO)
+                    .collect(Collectors.toList());  // 将 List<User> 转换为 List<UserResponseDTO>
+        }
+        return users.stream()
+                .map(userMapper::toUserDetailsDTO)
+                .collect(Collectors.toList());  // 将 List<User> 转换为 List<UserResponseDTO>
+    }
+
+    public void addUser(UserDetailsDTO userRequestDTO) {
+        User user = new User();
+        userMapper.toUser(user, userRequestDTO);
+        userRepository.save(user);
     }
 
     public void deleteUser(Long id) {
+        if (!userRepository.existsById(id)) {
+            throw new EntityNotFoundException("User not found for id: " + id);
+        }
+
+        List<Project> projects = projectRepository.findByUserId(id);
+        if (!projects.isEmpty()) {
+            String projectIds = projects.stream()
+                    .map(Project::getName)  // 转换为ID字符串
+                    .limit(2)  // 只取前两个项目
+                    .collect(Collectors.joining(", "));  // 使用逗号分隔
+
+            int totalProjects = projects.size();  // 计算总共关联的项目数量
+            String message = "Can't delete, associated with projects: [" + projectIds;
+
+            if (totalProjects > 2) {
+                message += ", ... (" + totalProjects + " projects total)";  // 超过两个时显示总数
+            } else {
+                message += "]";
+            }
+            throw new SecurityException(message);
+        }
+
         userRepository.deleteById(id);
     }
 
-    public User updateUser(User user) {
-        if (userRepository.existsById(user.getId())) {
-            return userRepository.save(user);
-        } else {
-            throw new EntityNotFoundException("User not found for id " + user.getId());
+    public void updateUser(Long id, UserBasicDTO userRequestDTO) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        CustomUserDetails currentUser = (CustomUserDetails) authentication.getPrincipal();
+
+        if (!userRepository.existsById(id)) {
+            throw new EntityNotFoundException("User not found for id: " + id);
         }
+        User user = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("User not found for id: " + id));
+
+        System.out.println(currentUser.getAuthorities());
+
+        if (userRequestDTO instanceof UserDetailsDTO) {
+            if (currentUser.getAuthorities().stream()
+                    .noneMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"))) {
+                throw new SecurityException("Only an admin can update details");
+            }
+            userMapper.toUser(user, (UserDetailsDTO) userRequestDTO);
+        } else {
+            if (!currentUser.getUserId().equals(id) && currentUser.getAuthorities().stream()
+                    .noneMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"))) {
+                throw new SecurityException("Only the user themselves or an admin can update profile");
+            }
+            userMapper.toUser(user, userRequestDTO);
+        }
+
+        userRepository.save(user);
     }
 
-    public User updatePassword(Long id, PasswordDTO passwordDTO) {
-        User user = userRepository.findById(id).orElse(null);
-        if (!passwordDTO.getCurrentPassword().equals(user.getPassword())) {
-            throw new EntityNotFoundException("Password Incorrect");
+    public void updatePassword(Long id, PwdUpdateDTO passwordUpdateDTO) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("User not found for id: " + id));
+
+        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+        if (!passwordEncoder.matches(passwordUpdateDTO.getCurrentPassword(), user.getPassword())) {
+            throw new IllegalArgumentException("Incorrect password");
         }
-        if (passwordDTO.getNewPassword().equals(passwordDTO.getCurrentPassword())) {
-            throw new EntityNotFoundException("Password cannot be same");
+
+        if (passwordUpdateDTO.getNewPassword().equals(passwordUpdateDTO.getCurrentPassword())) {
+            throw new IllegalArgumentException("New password cannot be the same as the current password");
         }
-        if(passwordDTO.getNewPassword().equals(passwordDTO.getConfirmPassword())){
-            if (userRepository.existsById(id)) {
-                user.setPassword(passwordDTO.getNewPassword());
-                return userRepository.save(user);
-            } else {
-                throw new EntityNotFoundException("User not found for id ");
-            }
+
+        if (!passwordUpdateDTO.getNewPassword().equals(passwordUpdateDTO.getConfirmPassword())) {
+            throw new IllegalArgumentException("New password and confirm password do not match");
         }
-        throw new EntityNotFoundException("ERROR Password");
+
+        String encodedNewPassword = passwordEncoder.encode(passwordUpdateDTO.getNewPassword());
+        user.setPassword(encodedNewPassword);
+        userRepository.save(user);
     }
+
 }

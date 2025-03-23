@@ -1,4 +1,4 @@
-package com.in6225.project.security;
+package com.in6225.project.security.jwt;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
@@ -15,14 +15,12 @@ import java.util.stream.Collectors;
 @Component
 public class JwtTokenProvider {
 
-    private final String SECRET = "secret";
-    private final long EXPIRATION_TIME = 36000000;
+    private final String SECRET = "IN6225";
+    private final long EXPIRATION_TIME = 3600 * 1000;
 
     public String generateToken(Authentication authentication) {
         String username = authentication.getName();
-
         List<String> roles = authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList());
-
         return JWT.create()
                 .withSubject(username)
                 .withClaim("roles", roles)
