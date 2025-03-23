@@ -15,7 +15,7 @@ export const useMyProjectStore = defineStore('myProjects', {
       try {
         const meStore = useMeStore();
         if (meStore.getMe?.id) {
-          const res = await projectService.getProjectsByUserId(meStore.getMe.id);
+          const res = await projectService.getAllProjectsByMe();
           console.log(res);
           this.projects = res;
         }

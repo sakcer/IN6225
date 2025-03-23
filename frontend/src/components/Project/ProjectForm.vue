@@ -104,9 +104,7 @@ const handleSubmit = () => {
 
 // Handle closing the dialog
 const handleClose = () => {
-  console.log(props.form);
   formRef.value?.resetFields(); // Reset form fields
-  console.log(props.form);
   emit('close-project', props.form); // Emit close event with form data
 }
 

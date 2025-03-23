@@ -13,7 +13,7 @@ export const useProjectsStore = defineStore('projects', {
     async refetchProjects() {
       try {
         const res = await projectService.getAllProjects();
-        this.projects = res.projects;
+        this.projects = res;
       } catch (error) {
         console.error("Failed to fetch projects info:", error);
       }

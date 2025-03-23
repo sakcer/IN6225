@@ -58,6 +58,7 @@ import { useUsersStore } from '@/store/userStore';
 import { employeeService } from '@/services/employees/employeeService';
 import { ElMessageBox, ElMessage } from 'element-plus';
 import { useMeStore } from '@/store/meStore';
+import { AxiosError } from 'axios';
 import type { Employee } from '@/utils/types/employee';
 import type { Statistics } from '@/utils/types/statistics';
 
@@ -72,18 +73,6 @@ const loading = ref(false);
 const dialogVisible = ref(false);
 const formType = ref(0);
 const form = ref({} as Employee)
-// const form = ref<EmployeeForm>({
-//   id: null,
-//   name: '',
-//   email: '',
-//   phone: '',
-//   department: '',
-//   title: '',
-//   status: USER_STATUS.ACTIVE,
-//   role: USER_ROLES.USER,
-//   joinDate: '',
-//   avatar: '',
-// });
 
 const currentPage = ref(1)
 const pageSize = ref(PAGE_SIZES[0])
@@ -127,18 +116,6 @@ const handleAddEmployee = () => {
   console.log("Handling add employee logic")
   formType.value = 0; // Set form type to add
   form.value = {} as Employee
-  // form.value = {
-  //   id: null,
-  //   name: '',
-  //   email: '',
-  //   phone: '',
-  //   department: '',
-  //   title: '',
-  //   status: USER_STATUS.ACTIVE,
-  //   role: USER_ROLES.USER,
-  //   joinDate: '',
-  //   avatar: '',
-  // }
   dialogVisible.value = true; // Show dialog
 }
 
@@ -149,15 +126,13 @@ const handleDelete = async (user: Employee) => {
 
   try {
     await ElMessageBox.confirm(`Are you sure you want to delete user ${user.name}?`, 'Warning', { confirmButtonText: 'Yes', cancelButtonText: 'No', type: 'warning' });
-    await employeeService.deleteEmployee(user.id!);
-    ElMessage.success('Successfully deleted employee [' + user.employeeId + ']');
+    const data = await employeeService.deleteEmployee(user.id!);
+    ElMessage.success(data.message);
     usersStore.refetchUsers() // Refresh user list
     state.value = !state.value; // Trigger reactivity
   } catch (error) {
-    if (error !== 'cancel') {
-      ElMessage.error('Deletion failed');
-      console.error(error);
-    }
+    ElMessage.error((error as AxiosError).response?.data?.message || (error as AxiosError).message || 'An unexpected error occurred');
+    console.error(error);
   }
 }
 
@@ -177,29 +152,31 @@ const handleSubmit = async (form: Employee) => {
 
   try {
     loading.value = true; // Show loading state
+    let data;
     if (formType.value === 1) {
-      const data = await employeeService.updateEmployee(form); // Update employee
-      ElMessage.success('Successfully edited employee [' + data.employeeId + ']');
+      data = await employeeService.updateEmployee(form); // Update employee
     } else {
-      const data = await employeeService.createEmployee(form); // Create new employee
-      ElMessage.success('Successfully added employee [' + data.employeeId + ']');
+      data = await employeeService.createEmployee(form); // Create new employee
     }
+    ElMessage.success(data.message);
     usersStore.refetchUsers() // Refresh user list
     const meStore = useMeStore();
     meStore.refetchMe(); // Refresh current user data
-  } catch {
-    ElMessage.error('Addition failed');
-  } finally {
+
     setTimeout(() => {
       dialogVisible.value = false; // Hide dialog
-      loading.value = false; // Hide loading state
     }, 500);
+  } catch (error) {
+    ElMessage.error((error as AxiosError).response?.data?.message || (error as AxiosError).message || 'An unexpected error occurred');
+  } finally {
+    loading.value = false; // Hide loading state
   }
 }
 
 // Handle closing the dialog
 const handleClose = () => {
   console.log("Handling close employee logic")
+  form.value = {} as Employee
   dialogVisible.value = false; // Hide dialog
 }
 

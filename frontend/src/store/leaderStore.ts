@@ -14,7 +14,7 @@ export const useLeadersStore = defineStore('leaders', {
     async refetchLeaders() {
       try {
         const res = await employeeService.getAllEmployees();
-        this.leaders = res.users.filter((user: Employee) => user.role === USER_ROLES.LEADER);
+        this.leaders = res.filter((user: Employee) => user.role === USER_ROLES.LEADER);
       } catch (error) {
         console.error("Failed to fetch users info:", error);
       }

@@ -13,7 +13,7 @@ export const useUsersStore = defineStore('users', {
     async refetchUsers() {
       try {
         const res = await employeeService.getAllEmployees();
-        this.users = res.users;
+        this.users = res;
       } catch (error) {
         console.error("Failed to fetch users info:", error);
       }

@@ -61,6 +61,7 @@ import Pagination from '@/components/Pagination.vue'
 import ProjectRow from '@/components/Project/ProjectRow.vue'
 import { projectService } from '@/services/projects/projectService'
 import { PROJECT_STATUS } from '@/utils/constants'
+import { AxiosError } from 'axios';
 import { ref, computed, onMounted } from 'vue'
 import { ElMessageBox, ElMessage } from 'element-plus'
 import type { Project } from '@/utils/types/project'
@@ -93,17 +94,6 @@ const total = computed(() => filteredProjects.value.length) // Total number of f
 
 // Form data for adding/editing projects
 const form = ref({} as Project)
-
-// const form = ref<Project>({
-//   name: '',
-//   id: null,
-//   description: '',
-//   status: PROJECT_STATUS.ACTIVE,
-//   progress: 0,
-//   dateRange: [],
-//   leader: {},
-//   memberIds: []
-// })
 
 // Filtered project list based on status and search query
 const filteredProjects = computed(() => {
@@ -145,13 +135,10 @@ const handleDeleteProject = async (row: Project) => {
     try {
       await ElMessageBox.confirm(`Are you sure you want to delete project ${row.name}?`, 'Warning', { confirmButtonText: 'Yes', cancelButtonText: 'No', type: 'warning' });
       const data = await projectService.deleteProject(row.id!);
-      ElMessage.success('Successfully deleted project [' + row.id + ']: ' + data.message);
+      ElMessage.success(data.message);
       projectsStore.refetchProjects() // Refresh project list
     } catch (error) {
-      if (error !== 'cancel') {
-        ElMessage.error('Deletion failed');
-        console.error(error);
-      }
+      ElMessage.error((error as AxiosError).response?.data?.message || (error as AxiosError).message || 'An unexpected error occurred');
     }
 };
 
@@ -160,24 +147,21 @@ const handleAddProject = () => {
   console.log("Handling add project logic")
   formType.value = 3; // Set form type to add
   dialogVisible.value = true
-  // form.value = {
-  //   name: '',
-  //   id: null,
-  //   description: '',
-  //   status: PROJECT_STATUS.ACTIVE,
-  //   progress: 0,
-  //   dateRange: [],
-  //   leader: {},
-  //   memberIds: []
-  // }
-  form.value = {} as Project
+  form.value = {
+    leader: {} as Employee,
+    members: [] as Employee[]
+  } as Project;
 }
 
 // Handle closing the project dialog
-const handleClose = (form: Project) => {
+const handleClose = (row: Project) => {
   console.log("Handling close project logic")
-  console.log(form);
+  console.log(row)
   dialogVisible.value = false
+  form.value = {
+    leader: {} as Employee,
+    members: [] as Employee[]
+  } as Project;
 }
 
 // Handle submitting the project form
@@ -197,14 +181,16 @@ const handleSubmit = async (form: Project) => {
     } else {
       data = await projectService.createProject(form); // Create new project
     }
-    ElMessage.success('Successfully added project [' + data.id + ']');
+    ElMessage.success(data.message);
     projectsStore.refetchProjects() // Refresh project list
+    setTimeout(() => {
+      dialogVisible.value = false; // Close dialog after submission
+    }, 500);
   } catch (error) {
-    ElMessage.error('Addition failed');
+    ElMessage.error((error as AxiosError).response?.data?.message || (error as AxiosError).message || 'An unexpected error occurred');
     console.log(error);
   } finally {
     setTimeout(() => {
-      dialogVisible.value = false; // Close dialog after submission
     }, 500);
   }
 }

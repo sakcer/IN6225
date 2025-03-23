@@ -25,7 +25,7 @@ export const useMeStore = defineStore('me', {
     },
     async refetchMe() {
       try { 
-        const res = await employeeService.getEmployeeById(this.me.id);
+        const res = await employeeService.getEmployeeMe();
         console.log("res", res);
         this.me = res;
         this.role = res.role;

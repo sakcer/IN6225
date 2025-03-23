@@ -36,6 +36,7 @@ import InfoDetails from '@/components/Profile/InfoDetails.vue'
 import InfoForm from '@/components/Profile/InfoForm.vue'
 import PasswordForm from '@/components/Profile/PasswordForm.vue'
 import { employeeService } from '@/services/employees/employeeService'
+import { AxiosError } from 'axios';
 import { ElMessage } from 'element-plus'
 import type { Employee } from '@/utils/types/employee'
 
@@ -67,13 +68,13 @@ const handleSave = async () => {
   console.log("Handling save")
   console.log(form.value)
   try {
-    await employeeService.updateEmployee(form.value as Employee) // Update employee data
+    const data = await employeeService.updateEmployee(form.value as Employee) // Update employee data
     meStore.refetchMe() // Refresh current user data
     dialogVisible.value = false // Hide the dialog
-    ElMessage.success("Save successful") // Show success message
+    ElMessage.success(data.message) // Show success message
   } catch (error) {
     console.error("Save failed", error)
-    ElMessage.error("Save failed") // Show error message
+    ElMessage.error((error as AxiosError).response?.data?.message || (error as AxiosError).message || 'An unexpected error occurred');
   }
 }
 
@@ -81,12 +82,12 @@ const handleSavePassword = async (passwordData: any) => {
   console.log("Handling save password")
   console.log(passwordData)
   try {
-    await employeeService.updateEmployeePassword(employee.value?.id || -1, passwordData)
+    const data = await employeeService.updateEmployeePassword(employee.value?.id, passwordData)
     passwordDialogVisible.value = false
-    ElMessage.success("Password changed successfully")
+    ElMessage.success(data.message)
   } catch (error) {
     console.error("Password change failed", error)
-    ElMessage.error("Password change failed")
+    ElMessage.error((error as AxiosError).response?.data?.message || (error as AxiosError).message || 'An unexpected error occurred');
   }
 }
 
