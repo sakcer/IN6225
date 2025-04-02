@@ -6,6 +6,13 @@
 
     <h1 class="text-3xl font-bold mb-6">Projects</h1>
 
+    <!-- Statistics cards -->
+    <el-row :gutter="20" class="mb-6">
+      <el-col :span="12" v-for="(stat, index) in statsData" :key="index">
+        <statistics-card v-if="stat" :stat="stat" />
+      </el-col>
+    </el-row>
+
     <el-card shadow="hover" class="mb-6">
 
       <div class="w-full mb-6">
@@ -68,9 +75,13 @@ import type { Project } from '@/utils/types/project'
 import type { Employee } from '@/utils/types/employee'
 import { useProjectsStore } from '@/store/projectStore'
 import { useUsersStore } from '@/store/userStore'
+import { statsService } from '@/services/stats/statsService'
+import { employeeService } from '@/services/employees/employeeService';
 import { useMeStore } from '@/store/meStore'
 import { PAGE_SIZES } from '@/utils/constants'
 import { useLeadersStore } from '@/store/leaderStore'
+import StatisticsCard from '@/components/StatisticsCard.vue';
+import { Document, Check } from '@element-plus/icons-vue';
 
 // State management
 const status = ref(PROJECT_STATUS.ALL) // Current project status
@@ -94,6 +105,23 @@ const total = computed(() => filteredProjects.value.length) // Total number of f
 
 // Form data for adding/editing projects
 const form = ref({} as Project)
+
+const STAT_ITEMS = [
+  { key: 'totalProjects', label: 'Total Projects', icon: Document, type: 'primary' },
+  { key: 'completedProjects', label: 'Completed Projects', icon: Check, type: 'success' },
+]
+
+const stats = ref({
+  totalProjects: 0,
+  completedProjects: 0,
+})
+
+const statsData = computed(() => 
+  STAT_ITEMS.map(item => ({
+    ...item,
+    value: stats.value[item.key]
+  }))
+)
 
 // Filtered project list based on status and search query
 const filteredProjects = computed(() => {
@@ -207,7 +235,13 @@ const handleSort = (sort: { prop: keyof Project, order: string }) => {
 }
 
 // Fetch data on component mount
-onMounted(() => {
+onMounted(async () => {
+  const [statsOverview, employees] = await Promise.all([
+    statsService.getStatsOverview(),
+    employeeService.getAllEmployees()
+  ])
+  Object.assign(stats.value, statsOverview)
+
   usersStore.refetchUsers() // Refresh users
   projectsStore.refetchProjects() // Refresh projects
   leadersStore.refetchLeaders() // Refresh leaders

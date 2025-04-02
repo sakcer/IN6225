@@ -8,7 +8,7 @@
         {{ stat.label }}
       </div>
     </template>
-    <span :class="['text-3xl font-bold', `text-${stat.type}`]">
+    <span :class="['text-3xl font-bold']" :style="{ color: `var(--el-color-${stat.type})` }">
       {{ stat.value }}
     </span>
   </el-card>

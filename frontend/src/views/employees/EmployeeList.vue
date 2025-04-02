@@ -7,8 +7,8 @@
 
     <!-- Statistics cards -->
     <el-row :gutter="20" class="mb-6">
-      <el-col :span="6" v-for="(stat, index) in statistics" :key="index">
-        <statistics-card v-if="stat" :stat="stat" as Statistics />
+      <el-col :span="6" v-for="(stat, index) in statsData" :key="index">
+        <statistics-card v-if="stat" :stat="stat" />
       </el-col>
     </el-row>
 
@@ -56,6 +56,7 @@ import Breadcrumb from '@/components/Breadcrumb.vue';
 import { PAGE_SIZES, USER_STATUS } from '@/utils/constants';
 import { useUsersStore } from '@/store/userStore';
 import { employeeService } from '@/services/employees/employeeService';
+import { statsService } from '@/services/stats/statsService'
 import { ElMessageBox, ElMessage } from 'element-plus';
 import { useMeStore } from '@/store/meStore';
 import { AxiosError } from 'axios';
@@ -64,7 +65,7 @@ import type { Statistics } from '@/utils/types/statistics';
 
 // Store reference for users
 const usersStore = useUsersStore();
-const users = computed(() => usersStore.getUsers as Employee[]);
+const users = ref([]) // computed(() => usersStore.getUsers as Employee[]);
 
 const state = ref(false);
 const status = ref(USER_STATUS.ALL);
@@ -78,23 +79,26 @@ const currentPage = ref(1)
 const pageSize = ref(PAGE_SIZES[0])
 const total = computed(() => filteredUsers.value.length)
 
-const total_users = computed(() => users.value.length);
-const total_active_users = computed(() => users.value.filter(user => user.status === USER_STATUS.ACTIVE).length);
-const total_new_users = computed(() => {
-  const todayInShanghai = new Date().toLocaleString('en-US', { timeZone: 'Asia/Shanghai' }).split(' ')[0];
-  return users.value.filter(user => {
-    const userJoinDateInShanghai = new Date(user.joinDate || '').toLocaleString('en-US', { timeZone: 'Asia/Shanghai' }).split(' ')[0];
-    return userJoinDateInShanghai === todayInShanghai;
-  }).length;
-});
-const total_active_rate = computed(() => (total_users.value > 0 ? total_active_users.value / total_users.value : 0).toFixed(2));
+const STAT_ITEMS = [
+  { key: 'totalEmployees', label: 'Total Employees', icon: User, type: 'primary' },
+  { key: 'newEmployees', label: 'New Employees', icon: Promotion, type: 'success'},
+  { key: 'activeEmployees', label: 'Active Employees', icon: UserFilled, type: 'warning'},
+  { key: 'activeRate', label: 'Active Rate', icon: TrendCharts, type: 'danger' }
+]
 
-const statistics = computed(() => [
-  { label: 'Total Users', icon: User, value: total_users.value, type: 'primary' } as Statistics,
-  { label: 'Active Users', icon: UserFilled, value: total_active_users.value, type: 'success' } as Statistics,
-  { label: 'New Users', icon: Promotion, value: total_new_users.value, type: 'warning' } as Statistics,
-  { label: 'Active Rate', icon: TrendCharts, value: parseFloat(total_active_rate.value), type: 'danger' } as Statistics,
-]);
+const stats = ref({
+  totalEmployees: 0,
+  activeEmployees: 0,
+  newEmployees: 0,
+  activeRate: 0
+})
+
+const statsData = computed(() => 
+  STAT_ITEMS.map(item => ({
+    ...item,
+    value: stats.value[item.key]
+  }))
+)
 
 const filteredUsers = computed(() => {
   const query = searchQuery.value.toLowerCase();
@@ -191,7 +195,16 @@ const handleSort = (sort: { prop: keyof Employee, order: string }) => {
 };
 
 // Fetch users on component mount
-onMounted(() => {
+onMounted(async () => {
+  const [statsOverview, employees] = await Promise.all([
+    statsService.getStatsOverview(),
+    employeeService.getAllEmployees()
+  ])
+  Object.assign(stats.value, statsOverview)
+  stats.value.activeRate = (statsOverview.activeEmployees / statsOverview.totalEmployees).toFixed(2);
+
+  users.value = employees
+
   usersStore.refetchUsers() // Refresh user list
 })
 </script>

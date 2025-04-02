@@ -28,6 +28,9 @@ export const API_ENDPOINTS = {
   PROJECTS_DELETE: '/project',
   PROJECTS_ALL_ME: '/project/all/me',
   LOGIN: '/api/auth/login',
+  STATS_OVERVIEW: '/stats/overview',
+  STATS_DEPARTMENTS_DIST: '/stats/departments/distribution',
+  STATS_EMPLOYEES_TREND: '/stats/employees/trend',
 } as const;
 
 

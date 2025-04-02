@@ -12,4 +12,7 @@ import java.util.List;
 public interface ProjectRepository extends JpaRepository<Project, Long> {
     @Query("SELECT p FROM Project p WHERE p.leader.id = :userId OR :userId IN (SELECT u.id FROM p.members u)")
     List<Project> findByUserId(@Param("userId") Long userId);
+
+    @Query("SELECT COUNT(p) FROM Project p WHERE p.status = :status")
+    long countByStatus(@Param("status") Project.ProjectStatus status);
 }
