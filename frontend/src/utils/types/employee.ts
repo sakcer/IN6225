@@ -12,6 +12,7 @@ export interface Employee {
   status: UserStatus;
   department: string;
   title: string;
-  avatar: string;
+  avatar?: string;
   joinDate: string;
+  type?: string;
 }

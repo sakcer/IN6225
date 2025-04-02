@@ -4,21 +4,18 @@ import com.in6225.project.model.dto.MsgDTO;
 import com.in6225.project.model.dto.PwdUpdateDTO;
 import com.in6225.project.model.dto.UserBasicDTO;
 import com.in6225.project.model.dto.UserDetailsDTO;
+import com.in6225.project.model.entity.User;
 import com.in6225.project.security.CustomUserDetails;
 import com.in6225.project.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/employee")
@@ -69,5 +66,16 @@ public class UserController {
     public ResponseEntity<?> updateUserPassword(@PathVariable Long id, @Valid @RequestBody PwdUpdateDTO passwordUpdateDTO) {
         userService.updatePassword(id, passwordUpdateDTO);
         return ResponseEntity.ok(new MsgDTO("Password updated"));
+    }
+
+    @GetMapping
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<?> getEmployeesByFilter(@RequestParam(defaultValue = "0") Integer page,
+                                                  @RequestParam(defaultValue = "10") Integer size,
+                                                  @RequestParam(defaultValue = "id,ascending") String sort,
+                                                  @RequestParam(required = false) String query,
+                                                  @RequestParam(required = false) User.UserStatus status) {
+
+        return ResponseEntity.ok(userService.getEmployeesByFilter(page, size, sort, query, status));
     }
 }

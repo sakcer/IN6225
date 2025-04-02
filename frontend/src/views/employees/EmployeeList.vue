@@ -29,7 +29,7 @@
       </div>
 
       <!-- User list -->
-      <employee-row :data="pageUsers" @edit-employee="handleEdit" @delete-employee="handleDelete" @sort-employee="handleSort"/>
+      <employee-row :data="pageEmployees" @edit-employee="handleEdit" @delete-employee="handleDelete" @sort-employee="handleSort"/>
 
       <!-- Pagination -->
       <pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :total="total" />
@@ -43,7 +43,7 @@
 
 <script setup lang="ts">
 // Import necessary libraries and components
-import { computed, ref, onMounted } from 'vue';
+import { computed, ref, onMounted, watch } from 'vue';
 import { User, UserFilled, Promotion, TrendCharts } from '@element-plus/icons-vue';
 import StatisticsCard from '@/components/StatisticsCard.vue';
 import AddButton from '@/components/AddButton.vue';
@@ -54,20 +54,15 @@ import Pagination from '@/components/Pagination.vue';
 import EmployeeForm from '@/components/Employee/EmployeeForm.vue';
 import Breadcrumb from '@/components/Breadcrumb.vue';
 import { PAGE_SIZES, USER_STATUS } from '@/utils/constants';
-import { useUsersStore } from '@/store/userStore';
 import { employeeService } from '@/services/employees/employeeService';
 import { statsService } from '@/services/stats/statsService'
 import { ElMessageBox, ElMessage } from 'element-plus';
 import { useMeStore } from '@/store/meStore';
-import { AxiosError } from 'axios';
 import type { Employee } from '@/utils/types/employee';
 import type { Statistics } from '@/utils/types/statistics';
+import { handleAxiosError } from '@/utils/errorMsg';
 
 // Store reference for users
-const usersStore = useUsersStore();
-const users = ref([]) // computed(() => usersStore.getUsers as Employee[]);
-
-const state = ref(false);
 const status = ref(USER_STATUS.ALL);
 const searchQuery = ref('');
 const loading = ref(false);
@@ -77,7 +72,9 @@ const form = ref({} as Employee)
 
 const currentPage = ref(1)
 const pageSize = ref(PAGE_SIZES[0])
-const total = computed(() => filteredUsers.value.length)
+const total = ref(0)
+const sortParam = ref("name")
+const sortOrder = ref("ascending")
 
 const STAT_ITEMS = [
   { key: 'totalEmployees', label: 'Total Employees', icon: User, type: 'primary' },
@@ -96,24 +93,25 @@ const stats = ref({
 const statsData = computed(() => 
   STAT_ITEMS.map(item => ({
     ...item,
-    value: stats.value[item.key]
-  }))
+    value: stats.value[item.key as keyof typeof stats.value]
+  } as Statistics))
 )
 
-const filteredUsers = computed(() => {
-  const query = searchQuery.value.toLowerCase();
-  return users.value.filter(user => {
-    const matchesStatus = status.value === USER_STATUS.ALL || user.status === status.value;
-    const matchesSearch = query
-      ? [user.name, user.email, user.employeeId].some(field => field?.toLowerCase().includes(query))
-      : true;
-    return matchesStatus && matchesSearch;
-  });
-});
+const pageEmployees = ref([])
 
-const pageUsers = computed(() => {
-  return filteredUsers.value.slice((currentPage.value - 1) * pageSize.value, currentPage.value * pageSize.value);
-});
+// Handle closing the dialog
+const handleClose = () => {
+  console.log("Handling close employee logic")
+  dialogVisible.value = false; // Hide dialog
+  form.value = {} as Employee
+}
+
+// Handle sorting employees
+const handleSort = async (sort: { prop: keyof Employee, order: string }) => {
+  const { prop, order } = sort;
+  sortParam.value = prop;
+  sortOrder.value = order;
+};
 
 // Handle adding a new employee
 const handleAddEmployee = () => {
@@ -123,37 +121,31 @@ const handleAddEmployee = () => {
   dialogVisible.value = true; // Show dialog
 }
 
+// Handle editing an employee
+const handleEdit = (employee: Employee) => {
+  console.log("Handling edit employee logic")
+  formType.value = 1; // Set form type to edit
+  form.value = { ...employee }; // Populate form with user data
+  dialogVisible.value = true; // Show dialog
+}
+
 // Handle deleting an employee
 const handleDelete = async (user: Employee) => {
   console.log("Handling delete employee logic")
-  console.log(user);
-
   try {
     await ElMessageBox.confirm(`Are you sure you want to delete user ${user.name}?`, 'Warning', { confirmButtonText: 'Yes', cancelButtonText: 'No', type: 'warning' });
     const data = await employeeService.deleteEmployee(user.id!);
     ElMessage.success(data.message);
-    usersStore.refetchUsers() // Refresh user list
-    state.value = !state.value; // Trigger reactivity
+    refetch()
   } catch (error) {
-    ElMessage.error((error as AxiosError).response?.data?.message || (error as AxiosError).message || 'An unexpected error occurred');
-    console.error(error);
+    handleAxiosError(error);
   }
-}
-
-// Handle editing an employee
-const handleEdit = (user: Employee) => {
-  console.log("Handling edit employee logic")
-  console.log(user);
-  formType.value = 1; // Set form type to edit
-  form.value = { ...user }; // Populate form with user data
-  dialogVisible.value = true; // Show dialog
 }
 
 // Handle form submission
 const handleSubmit = async (form: Employee) => {
   console.log("Handling submit employee logic")
   console.log(form)
-
   try {
     loading.value = true; // Show loading state
     let data;
@@ -163,48 +155,45 @@ const handleSubmit = async (form: Employee) => {
       data = await employeeService.createEmployee(form); // Create new employee
     }
     ElMessage.success(data.message);
-    usersStore.refetchUsers() // Refresh user list
-    const meStore = useMeStore();
-    meStore.refetchMe(); // Refresh current user data
+    refetch()
 
     setTimeout(() => {
       dialogVisible.value = false; // Hide dialog
     }, 500);
   } catch (error) {
-    ElMessage.error((error as AxiosError).response?.data?.message || (error as AxiosError).message || 'An unexpected error occurred');
+    handleAxiosError(error);
   } finally {
     loading.value = false; // Hide loading state
   }
 }
 
-// Handle closing the dialog
-const handleClose = () => {
-  console.log("Handling close employee logic")
-  form.value = {} as Employee
-  dialogVisible.value = false; // Hide dialog
+
+const refetch = async () => {
+  try {
+    const data = await employeeService.getEmployeesByFilter(currentPage.value - 1, pageSize.value, `${sortParam.value},${sortOrder.value}`, searchQuery.value, status.value)
+    pageEmployees.value = data.employees
+    total.value = data.total
+  } catch (error) {
+    handleAxiosError(error);
+  }
+
+  const meStore = useMeStore();
+  meStore.refetchMe(); // Refresh current user data
 }
 
-// Handle sorting employees
-const handleSort = (sort: { prop: keyof Employee, order: string }) => {
-  const { prop, order } = sort;
-  if (order === 'ascending') {
-    users.value.sort((a, b) => a[prop] > b[prop] ? 1 : -1);
-  } else if (order === 'descending') {
-    users.value.sort((a, b) => a[prop] < b[prop] ? 1 : -1);
-  }
-};
+watch([currentPage, pageSize, sortParam, sortOrder, searchQuery, status], () => {
+  refetch()
+});
 
 // Fetch users on component mount
 onMounted(async () => {
-  const [statsOverview, employees] = await Promise.all([
+  const [statsOverview] = await Promise.all([
     statsService.getStatsOverview(),
-    employeeService.getAllEmployees()
   ])
   Object.assign(stats.value, statsOverview)
-  stats.value.activeRate = (statsOverview.activeEmployees / statsOverview.totalEmployees).toFixed(2);
+  stats.value.activeRate = parseFloat((statsOverview.activeEmployees / statsOverview.totalEmployees).toFixed(2));
 
-  users.value = employees
+  refetch()
 
-  usersStore.refetchUsers() // Refresh user list
 })
 </script>

@@ -1,7 +1,7 @@
 import { API_ENDPOINTS, axiosInstance } from '@/services/utils';
 import type { Employee } from '@/utils/types/employee';
 import { useMeStore} from '@/store/meStore'
-import { USER_ROLES } from '@/utils/constants';
+import { USER_ROLES, USER_STATUS } from '@/utils/constants';
 
 export const employeeService = {
   async getAllEmployees() {
@@ -10,7 +10,7 @@ export const employeeService = {
   },
   async createEmployee(employee: Employee) {
     const { id, ...rest } = employee;
-    (rest as any).type = "userDetailsDTO";
+    rest.type = "userDetailsDTO";
     const response = await axiosInstance.post(API_ENDPOINTS.EMPLOYEES_ADD, rest);
     return response.data;
   },
@@ -30,7 +30,7 @@ export const employeeService = {
     const {me} = meStore;
     const data= {...employee};
     if (me.role === USER_ROLES.ADMIN) {
-      (data as any).type = "userDetailsDTO";
+      data.type = "userDetailsDTO";
     }
     const response = await axiosInstance.put(`${API_ENDPOINTS.EMPLOYEES_UPDATE}/${data.id}`, data);
     return response.data;
@@ -41,4 +41,16 @@ export const employeeService = {
     const response = await axiosInstance.put(`${API_ENDPOINTS.EMPLOYEES_UPDATE}/${id}/password`, password);
     return response.data;
   },
+
+  async getEmployeesByFilter(page: number, size: number, sort: string, query: string, status: USER_STATUS) {
+    let url = `${API_ENDPOINTS.EMPLOYEES}?page=${page}&size=${size}&sort=${sort}`;
+    if (query) {
+      url += `&query=${query}`;
+    }
+    if (status !== undefined && status !== USER_STATUS.ALL) {
+      url += `&status=${status}`;
+    }
+    const response = await axiosInstance.get(url);
+    return response.data;
+  }
 }; 

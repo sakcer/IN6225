@@ -11,6 +11,11 @@ import com.in6225.project.repository.UserRepository;
 import com.in6225.project.security.CustomUserDetails;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -42,6 +47,43 @@ public class UserService {
             throw new EntityNotFoundException("User not found for employeeId: " + EID);
         }
         return user;  // 将 User 转换为 UserResponseDTO
+    }
+
+    public Map<String, Object> getEmployeesByFilter(Integer page, Integer size, String sort, String query, User.UserStatus status) {
+        String[] sortParams = sort.split(",");
+        String sortField = sortParams[0];
+        Sort.Direction direction = (sortParams.length > 1 && "descending".equalsIgnoreCase(sortParams[1]))
+                ? Sort.Direction.DESC
+                : Sort.Direction.ASC;
+        Sort.Order order = new Sort.Order(direction, sortField);
+        Sort sortOrder = Sort.by(order);
+        Pageable pageable = PageRequest.of(page, size, sortOrder);
+
+        Specification<User> spec = Specification.where(null);
+
+        if (query != null && !query.isEmpty()) {
+            spec = spec.and((root, criteriaQuery, criteriaBuilder) ->
+                    criteriaBuilder.or(
+                            criteriaBuilder.like(root.get("name"), "%" + query + "%"),
+                            criteriaBuilder.like(root.get("email"), "%" + query + "%"),
+                            criteriaBuilder.like(root.get("employeeId"), "%" + query + "%")
+                    ));
+        }
+
+        if (status != null) {
+            spec = spec.and((root, criterialQuery, criteriaBuilder) ->
+                    criteriaBuilder.equal(root.get("status"), status));
+        }
+
+        Page<User> userPage = userRepository.findAll(spec, pageable);
+        List<UserDetailsDTO> userDetailsDTOS = userPage.stream()
+                .map(userMapper::toUserDetailsDTO)
+                .toList();
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("total", userPage.getTotalElements());
+        result.put("employees", userDetailsDTOS);
+        return result;
     }
 
     public List<Object> getAllUsers() {
