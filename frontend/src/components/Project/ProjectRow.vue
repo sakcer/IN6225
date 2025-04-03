@@ -98,10 +98,6 @@ defineProps({
     type: Array,
     required: true,
   },
-  users: {
-    type: Array,
-    required: true,
-  },
   me: {
     type: Object,
     required: true,

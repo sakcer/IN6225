@@ -3,6 +3,7 @@ package com.in6225.project.controller;
 import com.in6225.project.model.dto.MsgDTO;
 import com.in6225.project.model.dto.ProjectDTO;
 import com.in6225.project.model.entity.Project;
+import com.in6225.project.model.entity.User;
 import com.in6225.project.security.CustomUserDetails;
 import com.in6225.project.service.ProjectService;
 import jakarta.validation.Valid;
@@ -60,4 +61,13 @@ public class ProjectController {
         return ResponseEntity.ok(new MsgDTO("Update " + id));
     }
 
+    @GetMapping
+    public ResponseEntity<?> getProjectsByFilter(@RequestParam(defaultValue = "0") Integer page,
+                                                  @RequestParam(defaultValue = "10") Integer size,
+                                                  @RequestParam(defaultValue = "id,ascending") String sort,
+                                                  @RequestParam(required = false) String query,
+                                                  @RequestParam(required = false) Project.ProjectStatus status) {
+
+        return ResponseEntity.ok(projectService.getProjectsByFilter(page, size, sort, query, status));
+    }
 }

@@ -58,7 +58,7 @@
       <div class="flex justify-end gap-2">
         <el-button @click="handleClose">Cancel</el-button>
         <template v-if="formType !== 0"> 
-          <el-button type="primary" @click="handleSubmit">Confirm</el-button>
+          <el-button type="primary" @click="handleSubmit" :loading="loading">Confirm</el-button>
         </template>
       </div>
     </template>
@@ -86,6 +86,7 @@ const props = defineProps<{
 
 const formRef = ref<InstanceType<typeof ElForm>>() // Reference to the form
 const dialogVisible = defineModel<boolean>('dialogVisible', { required: true }); // Dialog visibility state
+const loading = defineModel<boolean>('loading', { required: true }); // Loading state
 
 // Define emitted events
 const emit = defineEmits(

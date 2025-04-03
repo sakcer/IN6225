@@ -44,13 +44,13 @@
 <script setup lang="ts">
 import { adminRoutes, employeeRoutes } from '@/router/index'
 import { getAvatarColor, getAvatarText } from '@/utils/avatar'
-import { useMeStore } from '@/store/meStore'
+import { useUserStore } from '@/store/meStore'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useRouter } from 'vue-router'
 import { USER_ROLES } from '@/utils/constants'
 import { computed } from 'vue'
 
-const meStore = useMeStore();
+const meStore = useUserStore();
 const me = computed(() => meStore.getMe)
 
 const isAdmin =  me.value.role === USER_ROLES.ADMIN
@@ -64,7 +64,7 @@ const handleLogout = () => {
     cancelButtonText: 'No',
     type: 'warning'
   }).then(() => {
-    meStore.clearMe()
+    meStore.clearUser()
     router.push('/login')
     ElMessage.success('Logout successful')
   }).catch((error) => {

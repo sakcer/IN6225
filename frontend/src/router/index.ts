@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { useMeStore } from '@/store/meStore'
+import { useUserStore } from '@/store/meStore'
 import { USER_ROLES } from '@/utils/constants'
 
 // Define admin routes
@@ -86,7 +86,7 @@ const router = createRouter({
 // Navigation guard
 router.beforeEach((to, from, next) => {
   console.log(to, from);
-  const meStore = useMeStore();
+  const meStore = useUserStore();
   const { role, token } = meStore;
 
   const isLogin = !!token; // Check if user is logged in

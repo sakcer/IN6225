@@ -1,6 +1,6 @@
 import { API_ENDPOINTS, axiosInstance } from '@/services/utils';
 import type { Employee } from '@/utils/types/employee';
-import { useMeStore} from '@/store/meStore'
+import { useUserStore} from '@/store/meStore'
 import { USER_ROLES, USER_STATUS } from '@/utils/constants';
 
 export const employeeService = {
@@ -26,8 +26,8 @@ export const employeeService = {
   },
 
   async updateEmployee(employee: Employee) {
-    const meStore = useMeStore();
-    const {me} = meStore;
+    const meStore = useUserStore();
+    const {userInfo: me} = meStore;
     const data= {...employee};
     if (me.role === USER_ROLES.ADMIN) {
       data.type = "userDetailsDTO";

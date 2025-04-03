@@ -2,35 +2,37 @@ import { defineStore } from 'pinia'
 import type { Employee } from '@/utils/types/employee'
 import { employeeService } from '@/services/employees/employeeService'
 import { USER_ROLES } from '@/utils/constants'
+import { handleAxiosError } from '@/utils/errorMsg';
 
-export const useMeStore = defineStore('me', {
+export const useUserStore = defineStore('me', {
   state: () => ({
-    me: {} as Employee,
+    userInfo: {} as Employee,
     role: USER_ROLES.USER,
     token: null as string | null,
   }),
   getters: {
-    getMe: (state) => state.me,  // getter 方法
+    getMe: (state) => state.userInfo,  // getter 方法
+    isAdmin: (state) => state.role === USER_ROLES.ADMIN,
+    isLeader: (state) => state.role === USER_ROLES.LEADER,
   },
   actions: {
-    clearMe() {
-      this.me = {} as Employee;
+    clearUser() {
+      this.userInfo = {} as Employee;
       this.role = USER_ROLES.USER;
       this.token = null;
     },
-    setMe(data: any) {
-      this.me = data.user;
+    setUser(data: any) {
+      this.userInfo = data.user;
       this.role = data.role;
       this.token = data.token;
     },
-    async refetchMe() {
+    async fetchUserInfo() {
       try { 
         const res = await employeeService.getEmployeeMe();
-        console.log("res", res);
-        this.me = res;
+        this.userInfo = res;
         this.role = res.role;
       } catch (error) {
-        console.error("Failed to fetch user info:", error);
+        handleAxiosError(error)
       }
     },
   },

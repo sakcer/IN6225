@@ -1,4 +1,5 @@
 import { API_ENDPOINTS, axiosInstance } from '@/services/utils';
+import { PROJECT_STATUS } from '@/utils/constants';
 import type { Project } from '@/utils/types/project';
 
 export const projectService = {
@@ -33,5 +34,17 @@ export const projectService = {
   async getAllProjectsByMe() {
     const response = await axiosInstance.get(`${API_ENDPOINTS.PROJECTS_ALL_ME}`);
     return response.data;
-  } 
+  },
+
+  async getProjectsByFilter(page: number, size: number, sort: string, query: string, status: PROJECT_STATUS) {
+    let url = `${API_ENDPOINTS.PROJECTS}?page=${page}&size=${size}&sort=${sort}`;
+    if (query) {
+      url += `&query=${query}`;
+    }
+    if (status !== undefined && status !== PROJECT_STATUS.ALL) {
+      url += `&status=${status}`;
+    }
+    const response = await axiosInstance.get(url);
+    return response.data;
+  }
 }; 

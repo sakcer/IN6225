@@ -1,13 +1,13 @@
 import axios from 'axios';
 import { API_ENDPOINTS } from '@/services/utils';
-import { useMeStore } from '@/store/meStore';
+import { useUserStore } from '@/store/meStore';
 
 export const authService = {
   async login(employeeId: string, password: string) {
     const response = await axios.post(API_ENDPOINTS.LOGIN, { employeeId, password });
 
-    const meStore = useMeStore();
-    meStore.setMe(response.data);
+    const meStore = useUserStore();
+    meStore.setUser(response.data);
 
     return response.data;
   },

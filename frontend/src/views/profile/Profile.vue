@@ -3,12 +3,12 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <!-- Left side personal information card -->
       <div class="lg:col-span-1">
-        <info-card v-if="employee" :employee="employee" as Employee />
+        <info-card v-if="meDetails" :employee="meDetails" as Employee />
       </div>
 
       <!-- Right side detailed information -->
       <div class="lg:col-span-2">
-        <info-details v-if="employee" :employee="employee" as Employee @edit-info="handleEditInfo" @edit-password="handleEditPassword" />
+        <info-details v-if="meDetails" :employee="meDetails" as Employee @edit-info="handleEditInfo" @edit-password="handleEditPassword" />
 
         <!-- Additional cards can be added here, such as recent activities, skill tags, etc. -->
         <el-card shadow="hover">
@@ -30,19 +30,19 @@
 <script setup lang="ts">
 // Import necessary libraries and components
 import { ref, computed, onMounted } from 'vue'
-import { useMeStore } from '@/store/meStore'
+import { useUserStore } from '@/store/meStore'
 import InfoCard from '@/components/Profile/InfoCard.vue'
 import InfoDetails from '@/components/Profile/InfoDetails.vue'
 import InfoForm from '@/components/Profile/InfoForm.vue'
 import PasswordForm from '@/components/Profile/PasswordForm.vue'
 import { employeeService } from '@/services/employees/employeeService'
-import { AxiosError } from 'axios';
 import { ElMessage } from 'element-plus'
 import type { Employee } from '@/utils/types/employee'
+import { handleAxiosError } from '@/utils/errorMsg'
 
 // Store reference for current user
-const meStore = useMeStore()
-const employee = computed(() => meStore.getMe) // Get current employee data
+const meStore = useUserStore()
+const meDetails = computed(() => meStore.getMe) // Get current employee data
 
 const dialogVisible = ref(false) // State for dialog visibility
 const form = ref({} as Employee) // Form data for editing employee information
@@ -69,12 +69,11 @@ const handleSave = async () => {
   console.log(form.value)
   try {
     const data = await employeeService.updateEmployee(form.value as Employee) // Update employee data
-    meStore.refetchMe() // Refresh current user data
+    meStore.fetchUserInfo() // Refresh current user data
     dialogVisible.value = false // Hide the dialog
     ElMessage.success(data.message) // Show success message
   } catch (error) {
-    console.error("Save failed", error)
-    ElMessage.error((error as AxiosError).response?.data?.message || (error as AxiosError).message || 'An unexpected error occurred');
+    handleAxiosError(error) // Handle error
   }
 }
 
@@ -82,12 +81,11 @@ const handleSavePassword = async (passwordData: any) => {
   console.log("Handling save password")
   console.log(passwordData)
   try {
-    const data = await employeeService.updateEmployeePassword(employee.value?.id, passwordData)
+    const data = await employeeService.updateEmployeePassword(meDetails.value?.id, passwordData)
     passwordDialogVisible.value = false
     ElMessage.success(data.message)
   } catch (error) {
-    console.error("Password change failed", error)
-    ElMessage.error((error as AxiosError).response?.data?.message || (error as AxiosError).message || 'An unexpected error occurred');
+    handleAxiosError(error) // Handle error
   }
 }
 
@@ -97,6 +95,6 @@ const handleCancelPassword = () => {
 
 // Fetch current user data on component mount
 onMounted(() => {
-  meStore.refetchMe()
+  meStore.fetchUserInfo()
 })
 </script>

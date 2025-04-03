@@ -9,6 +9,6 @@ public class StatsOverviewDTO {
     private Long totalDepartments;
     private Long totalProjects;
     private Long activeEmployees;
-    private Long completedProjects;
+    private Long activeProjects;
 }
 

@@ -46,6 +46,7 @@
 
     <!-- Add/Edit project dialog -->
     <project-form-card v-model:dialogVisible="dialogVisible" 
+      v-model:loading="loading"
       :form-type="formType"
       :form="form"
       :me="me"
@@ -67,76 +68,60 @@ import ProjectFormCard from '@/components/Project/ProjectForm.vue'
 import Pagination from '@/components/Pagination.vue'
 import ProjectRow from '@/components/Project/ProjectRow.vue'
 import { projectService } from '@/services/projects/projectService'
-import { PROJECT_STATUS } from '@/utils/constants'
-import { AxiosError } from 'axios';
-import { ref, computed, onMounted } from 'vue'
+import { PROJECT_STATUS, USER_ROLES } from '@/utils/constants'
+import { ref, computed, onMounted, watch } from 'vue'
 import { ElMessageBox, ElMessage } from 'element-plus'
 import type { Project } from '@/utils/types/project'
 import type { Employee } from '@/utils/types/employee'
-import { useProjectsStore } from '@/store/projectStore'
-import { useUsersStore } from '@/store/userStore'
 import { statsService } from '@/services/stats/statsService'
 import { employeeService } from '@/services/employees/employeeService';
-import { useMeStore } from '@/store/meStore'
+import { useUserStore } from '@/store/meStore'
 import { PAGE_SIZES } from '@/utils/constants'
-import { useLeadersStore } from '@/store/leaderStore'
 import StatisticsCard from '@/components/StatisticsCard.vue';
 import { Document, Check } from '@element-plus/icons-vue';
+import { handleAxiosError } from '@/utils/errorMsg'
+import type { Statistics } from '@/utils/types/statistics'
 
 // State management
 const status = ref(PROJECT_STATUS.ALL) // Current project status
 const searchQuery = ref('') // Search query for filtering projects
+const loading = ref(false)
 const dialogVisible = ref(false) // Visibility of the project dialog
 const formType = ref(0) // Type of form (add/edit)
 
-// Store references
-const projectsStore = useProjectsStore()
-const usersStore = useUsersStore()
-const leadersStore = useLeadersStore()
-const meStore = useMeStore()
-const users = computed(() => usersStore.getUsers) // List of users
-const leaders = computed(() => leadersStore.getLeaders) // List of leaders
-const projects = computed(() => projectsStore.getProjects) // List of projects
+const meStore = useUserStore()
+const users = ref([] as Employee[])
+const leaders = ref([] as Employee[])
 const me = computed(() => meStore.getMe) // Current user
 
 const currentPage = ref(1) // Current page for pagination
 const pageSize = ref(PAGE_SIZES[0]) // Page size for pagination
-const total = computed(() => filteredProjects.value.length) // Total number of filtered projects
+const total = ref(0)
+const sortParam = ref("name") // Sorting parameter
+const sortOrder = ref("ascending") // Sorting order
 
 // Form data for adding/editing projects
 const form = ref({} as Project)
 
 const STAT_ITEMS = [
   { key: 'totalProjects', label: 'Total Projects', icon: Document, type: 'primary' },
-  { key: 'completedProjects', label: 'Completed Projects', icon: Check, type: 'success' },
+  { key: 'activeProjects', label: 'Active Projects', icon: Check, type: 'success' },
 ]
 
 const stats = ref({
   totalProjects: 0,
-  completedProjects: 0,
+  activeProjects: 0,
 })
 
 const statsData = computed(() => 
   STAT_ITEMS.map(item => ({
     ...item,
-    value: stats.value[item.key]
-  }))
+    value: stats.value[item.key as keyof typeof stats.value]
+  } as Statistics))
 )
 
-// Filtered project list based on status and search query
-const filteredProjects = computed(() => {
-  return projects.value.filter(project => {
-    const matchesStatus = status.value === PROJECT_STATUS.ALL || project.status === status.value
-    const matchesSearch = project.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-      project.description.toLowerCase().includes(searchQuery.value.toLowerCase())
-    return matchesStatus && matchesSearch
-  })
-})
-
 // Projects to display on the current page
-const pageProjects = computed(() => {
-  return filteredProjects.value.slice((currentPage.value - 1) * pageSize.value, currentPage.value * pageSize.value)
-})
+const pageProjects = ref([])
 
 // Handle viewing a project
 const handleViewProject = (row: Project) => {
@@ -154,20 +139,6 @@ const handleEditProject = (row: Project) => {
     form.value = row
     formType.value = 1; // Set form type to edit
     dialogVisible.value = true
-};
-
-// Handle deleting a project
-const handleDeleteProject = async (row: Project) => {
-    console.log("Handling delete project logic")
-    console.log(row);
-    try {
-      await ElMessageBox.confirm(`Are you sure you want to delete project ${row.name}?`, 'Warning', { confirmButtonText: 'Yes', cancelButtonText: 'No', type: 'warning' });
-      const data = await projectService.deleteProject(row.id!);
-      ElMessage.success(data.message);
-      projectsStore.refetchProjects() // Refresh project list
-    } catch (error) {
-      ElMessage.error((error as AxiosError).response?.data?.message || (error as AxiosError).message || 'An unexpected error occurred');
-    }
 };
 
 // Handle adding a new project
@@ -192,12 +163,28 @@ const handleClose = (row: Project) => {
   } as Project;
 }
 
+// Handle deleting a project
+const handleDeleteProject = async (row: Project) => {
+    console.log("Handling delete project logic")
+    console.log(row);
+    try {
+      await ElMessageBox.confirm(`Are you sure you want to delete project ${row.name}?`, 'Warning', { confirmButtonText: 'Yes', cancelButtonText: 'No', type: 'warning' });
+      const data = await projectService.deleteProject(row.id!);
+      ElMessage.success(data.message);
+      refetch()
+    } catch (error) {
+      handleAxiosError(error);
+    }
+};
+
+
 // Handle submitting the project form
 const handleSubmit = async (form: Project) => {
   console.log("Handling submit project logic")
   console.log(form);
 
   try {
+    loading.value = true;
     form.members = form.memberIds.map((id: number) => ({ id: id} as Employee)); // Map member IDs to member objects
     console.log(form.members);
     console.log(form);
@@ -210,29 +197,40 @@ const handleSubmit = async (form: Project) => {
       data = await projectService.createProject(form); // Create new project
     }
     ElMessage.success(data.message);
-    projectsStore.refetchProjects() // Refresh project list
+    refetch()
     setTimeout(() => {
       dialogVisible.value = false; // Close dialog after submission
     }, 500);
   } catch (error) {
-    ElMessage.error((error as AxiosError).response?.data?.message || (error as AxiosError).message || 'An unexpected error occurred');
-    console.log(error);
+    handleAxiosError(error);
+    console.log(error)
   } finally {
-    setTimeout(() => {
-    }, 500);
+    loading.value = false;
   }
 }
 
 // Handle sorting projects
 const handleSort = (sort: { prop: keyof Project, order: string }) => {
   const { prop, order } = sort;
-  console.log(prop, order);
-  if (order === 'ascending') {
-    projects.value.sort((a, b) => a[prop] > b[prop] ? 1 : -1);
-  } else if (order === 'descending') {
-    projects.value.sort((a, b) => a[prop] < b[prop] ? 1 : -1);
+  sortParam.value = prop;
+  sortOrder.value = order;
+}
+
+const refetch = async () => {
+  try {
+    const data = await projectService.getProjectsByFilter(currentPage.value - 1, pageSize.value, `${sortParam.value},${sortOrder.value}`, searchQuery.value, status.value)
+    pageProjects.value = data.projects
+    total.value = data.total
+    const statsOverview = await statsService.getStatsOverview()
+    Object.assign(stats.value, statsOverview)
+  } catch (error) {
+    handleAxiosError(error);
   }
 }
+
+watch([currentPage, pageSize, sortParam, sortOrder, searchQuery, status], () => {
+  refetch()
+})
 
 // Fetch data on component mount
 onMounted(async () => {
@@ -242,9 +240,10 @@ onMounted(async () => {
   ])
   Object.assign(stats.value, statsOverview)
 
-  usersStore.refetchUsers() // Refresh users
-  projectsStore.refetchProjects() // Refresh projects
-  leadersStore.refetchLeaders() // Refresh leaders
+  refetch()
+
+  leaders.value = employees.filter((employee: Employee) => employee.role === USER_ROLES.LEADER)
+  users.value = employees.filter((employee: Employee) => employee.role === USER_ROLES.USER)
 })
 </script>
 

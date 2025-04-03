@@ -35,7 +35,7 @@ export const API_ENDPOINTS = {
 
 
 import axios from 'axios';
-import { useMeStore } from '@/store/meStore'
+import { useUserStore } from '@/store/meStore'
 
 export const axiosInstance = axios.create({
   baseURL: '/api', // 根据需要设置 baseURL
@@ -44,7 +44,7 @@ export const axiosInstance = axios.create({
 
 axiosInstance.interceptors.request.use(
   (config) => {
-    const meStore = useMeStore();
+    const meStore = useUserStore();
     const {token} = meStore;
 
     if (token) {

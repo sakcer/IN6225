@@ -57,7 +57,7 @@ import { PAGE_SIZES, USER_STATUS } from '@/utils/constants';
 import { employeeService } from '@/services/employees/employeeService';
 import { statsService } from '@/services/stats/statsService'
 import { ElMessageBox, ElMessage } from 'element-plus';
-import { useMeStore } from '@/store/meStore';
+import { useUserStore } from '@/store/meStore';
 import type { Employee } from '@/utils/types/employee';
 import type { Statistics } from '@/utils/types/statistics';
 import { handleAxiosError } from '@/utils/errorMsg';
@@ -173,12 +173,15 @@ const refetch = async () => {
     const data = await employeeService.getEmployeesByFilter(currentPage.value - 1, pageSize.value, `${sortParam.value},${sortOrder.value}`, searchQuery.value, status.value)
     pageEmployees.value = data.employees
     total.value = data.total
+
+    const statsOverview = await statsService.getStatsOverview()
+    Object.assign(stats.value, statsOverview)
   } catch (error) {
     handleAxiosError(error);
   }
 
-  const meStore = useMeStore();
-  meStore.refetchMe(); // Refresh current user data
+  const meStore = useUserStore();
+  meStore.fetchUserInfo(); // Refresh current user data
 }
 
 watch([currentPage, pageSize, sortParam, sortOrder, searchQuery, status], () => {

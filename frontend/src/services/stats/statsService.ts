@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { API_ENDPOINTS, axiosInstance } from '@/services/utils';
-import { useMeStore } from '@/store/meStore';
+import { useUserStore } from '@/store/meStore';
 
 export const statsService = {
   async getStatsOverview() {

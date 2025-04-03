@@ -71,7 +71,7 @@ public class UserService {
         }
 
         if (status != null) {
-            spec = spec.and((root, criterialQuery, criteriaBuilder) ->
+            spec = spec.and((root, criteriaQuery, criteriaBuilder) ->
                     criteriaBuilder.equal(root.get("status"), status));
         }
 

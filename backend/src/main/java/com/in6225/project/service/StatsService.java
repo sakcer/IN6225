@@ -32,7 +32,7 @@ public class StatsService {
         statsSummaryDTO.setTotalDepartments(userRepository.countDistinctDepartment());
         statsSummaryDTO.setTotalProjects(projectRepository.count());
         statsSummaryDTO.setActiveEmployees(userRepository.countByStatus(User.UserStatus.ACTIVE));
-        statsSummaryDTO.setCompletedProjects(projectRepository.countByStatus(Project.ProjectStatus.ACTIVE));
+        statsSummaryDTO.setActiveProjects(projectRepository.countByStatus(Project.ProjectStatus.ACTIVE));
 
         return statsSummaryDTO;
     }

@@ -35,14 +35,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { User, Box, Calendar, Promotion, PieChart, TrendCharts } from '@element-plus/icons-vue'
 import Breadcrumb from '@/components/Breadcrumb.vue'
 import StatisticsCard from '@/components/StatisticsCard.vue';
 import * as echarts from 'echarts'
-import { useUsersStore } from '@/store/userStore'
-import { useProjectsStore } from '@/store/projectStore'
 import { statsService } from '@/services/stats/statsService'
+import type { Statistics } from '@/utils/types/statistics';
 
 const STAT_ITEMS = [
   { key: 'totalEmployees', label: 'Total Employees', icon: User, type: 'primary' },
@@ -61,8 +60,8 @@ const stats = ref({
 const statsData = computed(() => 
   STAT_ITEMS.map(item => ({
     ...item,
-    value: stats.value[item.key]
-  }))
+    value: stats.value[item.key as keyof typeof stats.value],
+  }) as Statistics)
 )
 
 const departmentChartRef = ref(null)

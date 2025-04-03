@@ -66,7 +66,7 @@
           <p>For first-time login, please use your Employee ID as the username and initial password</p>
           <p>
             Having issues? Please contact
-            <el-button type="primary" link class="px-0">System Administrator</el-button>
+            <el-button type="primary" link class="px-0" @click="handleContact">System Administrator</el-button>
           </p>
         </div>
       </el-form>
@@ -90,16 +90,11 @@ import { User, Lock } from '@element-plus/icons-vue'
 import type { FormInstance } from 'element-plus'
 import { authService } from '@/services/auth/authService'
 import { USER_ROLES } from '@/utils/constants'
-import { useMeStore } from '@/store/meStore' 
-import { useUsersStore } from '@/store/userStore'
-import { useProjectsStore } from '@/store/projectStore'
-import { useMyProjectStore } from '@/store/myProjectStore'
+import { useUserStore } from '@/store/meStore' 
+import { handleAxiosError } from '@/utils/errorMsg'
 
 // Store references
-const meStore = useMeStore()
-const usersStore = useUsersStore()
-const projectsStore = useProjectsStore()
-const myProjectStore = useMyProjectStore()
+const meStore = useUserStore()
 const router = useRouter()
 const formRef = ref<FormInstance>()
 const loading = ref(false)
@@ -131,7 +126,6 @@ const handleLogin = async () => {
 
     console.log(loginForm.employeeId, loginForm.password);
     const response = await authService.login(loginForm.employeeId, loginForm.password);
-    console.log(response);
 
     // Redirect based on role
     const isAdmin = response.user.role === USER_ROLES.ADMIN
@@ -139,20 +133,14 @@ const handleLogin = async () => {
     router.push(redirectPath)
 
     // Refresh data based on role
-    if (isAdmin) {  
-      await meStore.refetchMe()
-      await usersStore.refetchUsers()
-      await projectsStore.refetchProjects()
-    } else {
-      await meStore.refetchMe()
-      await usersStore.refetchUsers()
-      await myProjectStore.refetchProjects()
-    }
+    await meStore.fetchUserInfo()
 
-    ElMessage.success('Login successful')
+    setTimeout(() => {
+      ElMessage.success('Login successful')
+      loading.value = false
+    }, 500)
   } catch (error) {
-    console.error('Login failed:', error)
-    ElMessage.error('Incorrect username or password')
+    handleAxiosError(error)
   } finally {
     loading.value = false
   }
@@ -161,5 +149,9 @@ const handleLogin = async () => {
 // Handle forgot password
 const handleForgotPassword = () => {
   ElMessage.info('Please contact the system administrator to reset your password')
+}
+
+const handleContact = () => {
+  window.location.href = "mailto:example@example.com";
 }
 </script>
