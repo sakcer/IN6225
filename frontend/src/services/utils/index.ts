@@ -13,6 +13,7 @@ export const API_ENDPOINTS = {
   PROJECTS_DELETE: '/project',
   PROJECTS_ALL_ME: '/project/all/me',
   LOGIN: '/api/auth/login',
+  LOGOUT: '/api/auth/logout',
   REFRESH_TOKEN: '/api/auth/refresh',
   STATS_OVERVIEW: '/stats/overview',
   STATS_DEPARTMENTS_DIST: '/stats/departments/distribution',
@@ -21,7 +22,7 @@ export const API_ENDPOINTS = {
 
 
 import axios from 'axios';
-import { useUserStore } from '@/store/meStore'
+import { useUserStore } from '@/store/userStore'
 import { handleAxiosError } from '@/utils/errorMsg';
 
 export const axiosInstance = axios.create({

@@ -33,8 +33,7 @@
       </div>
 
       <!-- List view -->
-      <project-row :projects="pageProjects" :users="users" :me="me" 
-        @view-project="handleViewProject"
+      <project-row :projects="pageProjects" 
         @edit-project="handleEditProject"
         @delete-project="handleDeleteProject"
         @sort-project="handleSort"
@@ -49,9 +48,6 @@
       v-model:loading="loading"
       :form-type="formType"
       :form="form"
-      :me="me"
-      :users="users"
-      :leaders="leaders"
       @close-project="handleClose"
       @submit-project="handleSubmit" />
 
@@ -68,14 +64,12 @@ import ProjectFormCard from '@/components/Project/ProjectForm.vue'
 import Pagination from '@/components/Pagination.vue'
 import ProjectRow from '@/components/Project/ProjectRow.vue'
 import { projectService } from '@/services/projects/projectService'
-import { PROJECT_STATUS, USER_ROLES } from '@/utils/constants'
+import { FORM_TYPES, PROJECT_STATUS } from '@/utils/constants'
 import { ref, computed, onMounted, watch } from 'vue'
 import { ElMessageBox, ElMessage } from 'element-plus'
 import type { Project } from '@/utils/types/project'
 import type { Employee } from '@/utils/types/employee'
 import { statsService } from '@/services/stats/statsService'
-import { employeeService } from '@/services/employees/employeeService';
-import { useUserStore } from '@/store/meStore'
 import { PAGE_SIZES } from '@/utils/constants'
 import StatisticsCard from '@/components/StatisticsCard.vue';
 import { Document, Check } from '@element-plus/icons-vue';
@@ -87,12 +81,7 @@ const status = ref(PROJECT_STATUS.ALL) // Current project status
 const searchQuery = ref('') // Search query for filtering projects
 const loading = ref(false)
 const dialogVisible = ref(false) // Visibility of the project dialog
-const formType = ref(0) // Type of form (add/edit)
-
-const meStore = useUserStore()
-const users = ref([] as Employee[])
-const leaders = ref([] as Employee[])
-const me = computed(() => meStore.getMe) // Current user
+const formType = ref(FORM_TYPES.ADD)
 
 const currentPage = ref(1) // Current page for pagination
 const pageSize = ref(PAGE_SIZES[0]) // Page size for pagination
@@ -123,28 +112,19 @@ const statsData = computed(() =>
 // Projects to display on the current page
 const pageProjects = ref([])
 
-// Handle viewing a project
-const handleViewProject = (row: Project) => {
-    console.log("Handling view project logic")
-    form.value = row
-    formType.value = 0; // Set form type to view
-    dialogVisible.value = true
-    console.log(row);
-};
-
 // Handle editing a project
 const handleEditProject = (row: Project) => {
     console.log("Handling edit project logic")
     console.log(row);
-    form.value = row
-    formType.value = 1; // Set form type to edit
+    form.value = {...row}
+    formType.value = FORM_TYPES.EDIT; // Set form type to edit
     dialogVisible.value = true
 };
 
 // Handle adding a new project
 const handleAddProject = () => {
   console.log("Handling add project logic")
-  formType.value = 3; // Set form type to add
+  formType.value = FORM_TYPES.ADD; // Set form type to add
   dialogVisible.value = true
   form.value = {
     leader: {} as Employee,
@@ -153,9 +133,9 @@ const handleAddProject = () => {
 }
 
 // Handle closing the project dialog
-const handleClose = (row: Project) => {
+const handleClose = (project: Project) => {
   console.log("Handling close project logic")
-  console.log(row)
+  console.log(project)
   dialogVisible.value = false
   form.value = {
     leader: {} as Employee,
@@ -164,12 +144,12 @@ const handleClose = (row: Project) => {
 }
 
 // Handle deleting a project
-const handleDeleteProject = async (row: Project) => {
+const handleDeleteProject = async (project: Project) => {
     console.log("Handling delete project logic")
-    console.log(row);
+    console.log(project);
     try {
-      await ElMessageBox.confirm(`Are you sure you want to delete project ${row.name}?`, 'Warning', { confirmButtonText: 'Yes', cancelButtonText: 'No', type: 'warning' });
-      const data = await projectService.deleteProject(row.id!);
+      await ElMessageBox.confirm(`Are you sure you want to delete project ${project.name}?`, 'Warning', { confirmButtonText: 'Yes', cancelButtonText: 'No', type: 'warning' });
+      const data = await projectService.deleteProject(project.id!);
       ElMessage.success(data.message);
       refetch()
     } catch (error) {
@@ -185,13 +165,9 @@ const handleSubmit = async (form: Project) => {
 
   try {
     loading.value = true;
-    form.members = form.memberIds.map((id: number) => ({ id: id} as Employee)); // Map member IDs to member objects
-    console.log(form.members);
-    console.log(form);
-    console.log(formType.value);
 
     let data;
-    if (formType.value === 1) {
+    if (formType.value === FORM_TYPES.EDIT) {
       data = await projectService.updateProject(form); // Update project
     } else {
       data = await projectService.createProject(form); // Create new project
@@ -234,16 +210,11 @@ watch([currentPage, pageSize, sortParam, sortOrder, searchQuery, status], () => 
 
 // Fetch data on component mount
 onMounted(async () => {
-  const [statsOverview, employees] = await Promise.all([
+  const [statsOverview] = await Promise.all([
     statsService.getStatsOverview(),
-    employeeService.getAllEmployees()
   ])
   Object.assign(stats.value, statsOverview)
 
   refetch()
-
-  leaders.value = employees.filter((employee: Employee) => employee.role === USER_ROLES.LEADER)
-  users.value = employees.filter((employee: Employee) => employee.role === USER_ROLES.USER)
 })
 </script>
-

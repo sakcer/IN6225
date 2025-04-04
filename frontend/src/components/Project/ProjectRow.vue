@@ -52,7 +52,7 @@
 
 <!-- Project Members Column -->
 <el-table-column label="Project Members" width="150">
-    <template #default="{ row }">
+    <template #default="{ row }: {row:Project}">
     <el-tooltip v-for="member in row.members?.slice(0, 2)" :key="member.id" :content="member.name" placement="top">
         <template v-if="member">
         <el-avatar :size="32" :src="member.avatar" :style="{ backgroundColor: getAvatarColor(member.name) }">
@@ -60,23 +60,23 @@
         </el-avatar>
         </template>
     </el-tooltip>
-    <el-tooltip v-if="row.members?.length > 2" :content="row.members?.slice(2).map(m => m.name).join(', ')" placement="top">
-        <el-avatar :size="32">+{{ row.members?.length - 2 }}</el-avatar>
+    <el-tooltip v-if="row.members.length > 2" :content="row.members.slice(2).map(m => m.name).join(', ')" placement="top">
+        <el-avatar :size="32">+{{ row.members.length - 2 }}</el-avatar>
     </el-tooltip>
     </template>
 </el-table-column>
 
 <!-- Actions Column -->
-<el-table-column label="Actions" width="120" fixed="right">
+<el-table-column label="Actions" width="100" fixed="right">
     <template #default="{ row }">
     <el-button-group>
-    <el-tooltip content="View Details" placement="top">
+    <!-- <el-tooltip content="View Details" placement="top">
       <el-button type="info" :icon="View" circle @click="emitEvent('view-project', row)" />
-    </el-tooltip>
+    </el-tooltip> -->
     <el-tooltip content="Edit Project" placement="top">
-      <el-button type="primary" :icon="Edit" circle @click="emitEvent('edit-project', row)" :disabled="me.role !== USER_ROLES.ADMIN && row.leader.id !== me.id" />
+      <el-button type="primary" :icon="Edit" circle @click="emitEvent('edit-project', row)" :disabled="!userStore.isAdmin && row.leader.id !== userStore.userInfo.id" />
     </el-tooltip>
-    <template v-if="me.role === USER_ROLES.ADMIN">
+    <template v-if="userStore.isAdmin">
       <el-tooltip content="Delete Project" placement="top">
         <el-button type="danger" :icon="Delete" circle @click="emitEvent('delete-project', row)" />
       </el-tooltip>
@@ -87,32 +87,24 @@
 </el-table>
 </template>
 
-<script setup>
-import { computed } from 'vue';
+<script setup lang="ts">
 import { getAvatarColor, getAvatarText } from '@/utils/avatar';
-import { View, Edit, Delete } from '@element-plus/icons-vue';
-import { PROJECT_STATUS, USER_ROLES } from '@/utils/constants';
+import { Edit, Delete } from '@element-plus/icons-vue';
+import { PROJECT_STATUS } from '@/utils/constants';
+import type { Project } from '@/utils/types/project';
+import { useUserStore } from '@/store/userStore';
 
-defineProps({
-  projects: {
-    type: Array,
-    required: true,
-  },
-  me: {
-    type: Object,
-    required: true,
-  },
-});
+defineProps<{
+  projects: Project[],
+}>();
 
 const emit = defineEmits(
   ['view-project', 'edit-project', 'delete-project', 'sort-project']
 );
-const emitEvent = (event, row) => {
-  if (row.members) {
-    emit(event, {...row, memberIds: row.members.map(m => m.id)});
-  } else {
-    emit(event, row);
-  }
+
+const userStore = useUserStore();
+const emitEvent = (event: 'view-project' | 'delete-project' | 'edit-project' | 'sort-project', row: Project | Object) => {
+  emit(event, row);
 };
 
 </script>

@@ -9,8 +9,8 @@
             <el-tag class="mb-4" :type="employee.status === USER_STATUS.ACTIVE ? 'success' : 'info'">
                 {{ employee.status }}
             </el-tag>
-            <div class="text-gray-600 mb-2">{{ employee.title || employee.role }}</div>
-            <div class="text-gray-500 text-sm">{{ employee.department }}</div>
+            <!-- <div class="text-gray-600 mb-2">{{ employee.title + employee.role }}</div> -->
+            <!-- <div class="text-gray-500 text-sm">{{ employee.department }}</div> -->
         </div>
 
         <el-divider />

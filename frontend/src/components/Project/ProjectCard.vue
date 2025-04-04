@@ -57,11 +57,11 @@
     <!-- Action buttons -->
     <div class="flex justify-end gap-2 mt-4">
       <el-button-group>
-        <el-tooltip content="View Project" placement="top">
+        <!-- <el-tooltip content="View Project" placement="top">
           <el-button type="info" :icon="View" circle @click="emitEvent('view-project', project)" />
-        </el-tooltip>
+        </el-tooltip> -->
         <el-tooltip content="Edit Project" placement="top">
-          <el-button type="primary" :icon="Edit" circle @click="emitEvent('edit-project', project)" :disabled="me.id !== project.leader.id"/>
+          <el-button type="primary" :icon="Edit" circle @click="emitEvent('edit-project', project)" :disabled="userStore.userInfo.id !== project.leader.id"/>
         </el-tooltip>
       </el-button-group>
     </div>
@@ -72,16 +72,17 @@
 // Import necessary libraries and types
 import type { Project } from '@/utils/types/project';
 import { ElCard, ElTag, ElProgress, ElButtonGroup, ElButton, ElTooltip, ElAvatar, ElIcon } from 'element-plus';
-import { View, Edit, Calendar } from '@element-plus/icons-vue';
+import { Edit, Calendar } from '@element-plus/icons-vue';
 import { getAvatarColor, getAvatarText } from '@/utils/avatar';
 import { PROJECT_STATUS } from '@/utils/constants';
-import type { Employee } from '@/utils/types/employee';
+import { useUserStore } from '@/store/userStore';
 
 // Receive props passed from the parent component
 defineProps<{
   project: Project; // Project data
-  me: Employee; // Current user
 }>();
+
+const userStore = useUserStore();
 
 const emit = defineEmits(['edit-project', 'view-project']); // Define emitted events
 const emitEvent = (event: 'edit-project' | 'view-project', row: Project) => {

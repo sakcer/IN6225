@@ -10,4 +10,6 @@ public class LoginRequestDTO {
 
     @NotEmpty(message = "Password is required")
     private String password;
+
+    private Boolean remember = false;
 }

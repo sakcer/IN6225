@@ -36,3 +36,8 @@ export enum DEPARTMENTS {
   OPS = 'OPS',
   CS = 'CS'
 }
+
+export enum FORM_TYPES {
+  ADD = 'ADD',
+  EDIT = 'EDIT'
+}

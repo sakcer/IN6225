@@ -53,11 +53,11 @@ import EmployeeRow from '@/components/Employee/EmployeeRow.vue';
 import Pagination from '@/components/Pagination.vue';
 import EmployeeForm from '@/components/Employee/EmployeeForm.vue';
 import Breadcrumb from '@/components/Breadcrumb.vue';
-import { PAGE_SIZES, USER_STATUS } from '@/utils/constants';
+import { FORM_TYPES, PAGE_SIZES, USER_STATUS } from '@/utils/constants';
 import { employeeService } from '@/services/employees/employeeService';
 import { statsService } from '@/services/stats/statsService'
 import { ElMessageBox, ElMessage } from 'element-plus';
-import { useUserStore } from '@/store/meStore';
+import { useUserStore } from '@/store/userStore';
 import type { Employee } from '@/utils/types/employee';
 import type { Statistics } from '@/utils/types/statistics';
 import { handleAxiosError } from '@/utils/errorMsg';
@@ -67,7 +67,7 @@ const status = ref(USER_STATUS.ALL);
 const searchQuery = ref('');
 const loading = ref(false);
 const dialogVisible = ref(false);
-const formType = ref(0);
+const formType = ref(FORM_TYPES.ADD);
 const form = ref({} as Employee)
 
 const currentPage = ref(1)
@@ -116,7 +116,7 @@ const handleSort = async (sort: { prop: keyof Employee, order: string }) => {
 // Handle adding a new employee
 const handleAddEmployee = () => {
   console.log("Handling add employee logic")
-  formType.value = 0; // Set form type to add
+  formType.value = FORM_TYPES.ADD; // Set form type to add
   form.value = {} as Employee
   dialogVisible.value = true; // Show dialog
 }
@@ -124,7 +124,7 @@ const handleAddEmployee = () => {
 // Handle editing an employee
 const handleEdit = (employee: Employee) => {
   console.log("Handling edit employee logic")
-  formType.value = 1; // Set form type to edit
+  formType.value = FORM_TYPES.EDIT; // Set form type to edit
   form.value = { ...employee }; // Populate form with user data
   dialogVisible.value = true; // Show dialog
 }
@@ -149,7 +149,7 @@ const handleSubmit = async (form: Employee) => {
   try {
     loading.value = true; // Show loading state
     let data;
-    if (formType.value === 1) {
+    if (formType.value === FORM_TYPES.EDIT) {
       data = await employeeService.updateEmployee(form); // Update employee
     } else {
       data = await employeeService.createEmployee(form); // Create new employee

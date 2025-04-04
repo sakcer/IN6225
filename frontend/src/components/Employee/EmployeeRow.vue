@@ -35,16 +35,16 @@
         </el-tag>
       </template>
     </el-table-column>
-    <el-table-column label="ACTIONS" width="120" fixed="right">
+    <el-table-column label="ACTIONS" width="100" fixed="right">
       <template #default="{ row }">
-        <div class="flex gap-2">
+        <el-button-group>
           <el-tooltip content="Edit User" placement="top">
             <el-button type="primary" :icon="Edit" circle @click="emitEvent('edit-employee', row)" />
           </el-tooltip>
           <el-tooltip content="Delete User" placement="top">
             <el-button type="danger" :icon="Delete" circle @click="emitEvent('delete-employee', row)" />
           </el-tooltip>
-        </div>
+        </el-button-group>
       </template>
     </el-table-column>
 </el-table>

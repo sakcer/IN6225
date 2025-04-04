@@ -9,10 +9,13 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificationExecutor<User> {
-    User findByEmployeeId(String employeeId);
+    Optional<User> findByEmployeeId(String employeeId);
+
+    List<User> findByRole(User.UserRole role);
 
     @Query("SELECT u.department, COUNT(u) FROM User u GROUP BY u.department")
     List<Object[]> countByDepartment();

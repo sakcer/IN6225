@@ -28,17 +28,17 @@ public class ProjectController {
 //        return ResponseEntity.ok(projectService.getProjectById(id));
 //    }
 
-    @GetMapping("/all/me")
-    public ResponseEntity<?> getAllProjectsByUserId(@AuthenticationPrincipal CustomUserDetails currentUser) {
-        return ResponseEntity.ok(projectService.getAllProjectsByUserId(currentUser.getUserId()));
-    }
-
-    @GetMapping("/all")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<?> getAllProjects() {
-        List<ProjectDTO> projectDTOs = projectService.getAllProjects();
-        return ResponseEntity.ok(projectDTOs);
-    }
+//    @GetMapping("/all/me")
+//    public ResponseEntity<?> getAllProjectsByUserId(@AuthenticationPrincipal CustomUserDetails currentUser) {
+//        return ResponseEntity.ok(projectService.getAllProjectsByUserId(currentUser.getUserId()));
+//    }
+//
+//    @GetMapping("/all")
+//    @PreAuthorize("hasRole('ROLE_ADMIN')")
+//    public ResponseEntity<?> getAllProjects() {
+//        List<ProjectDTO> projectDTOs = projectService.getAllProjects();
+//        return ResponseEntity.ok(projectDTOs);
+//    }
 
     @PostMapping
     @PreAuthorize("hasRole('ROLE_ADMIN')")

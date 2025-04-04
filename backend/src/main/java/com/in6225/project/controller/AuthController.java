@@ -3,20 +3,14 @@ package com.in6225.project.controller;
 import com.in6225.project.model.dto.LoginRequestDTO;
 import com.in6225.project.model.dto.LoginResponseDTO;
 import com.in6225.project.model.dto.MsgDTO;
-import com.in6225.project.security.jwt.JwtTokenProvider;
-import com.in6225.project.security.UserDetailsServiceImpl;
 import com.in6225.project.service.AuthService;
-import com.in6225.project.service.UserService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -31,9 +25,13 @@ public class AuthController {
 
         Cookie refreshTokenCookie = new Cookie("refreshToken", lg.getRefreshToken());
         refreshTokenCookie.setHttpOnly(true); // 前端无法访问
-        // refreshTokenCookie.setSecure(true);  // 仅 HTTPS 传输（生产环境必须开启）
+         refreshTokenCookie.setSecure(true);  // 仅 HTTPS 传输（生产环境必须开启）
         refreshTokenCookie.setPath("/api/auth/refresh"); // 仅限 Refresh API 使用
-        refreshTokenCookie.setMaxAge(7 * 24 * 60 * 60); // 7 天
+        if (loginRequest.getRemember()) {
+            refreshTokenCookie.setMaxAge(7 * 24 * 60 * 60); // 7 天
+        } else {
+            refreshTokenCookie.setMaxAge(-1);
+        }
         response.addCookie(refreshTokenCookie);
 
         return ResponseEntity.ok(lg);
@@ -53,8 +51,14 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logout() {
-        return ResponseEntity.ok(new MsgDTO("Logout successfully"));
+    public ResponseEntity<?> logout(HttpServletResponse response) {
+        Cookie refreshTokenCookie = new Cookie("refreshToken", "");
+        refreshTokenCookie.setHttpOnly(true); // 前端无法访问
+        refreshTokenCookie.setSecure(true);  // 仅 HTTPS 传输（生产环境必须开启）
+        refreshTokenCookie.setPath("/api/auth/refresh"); // 仅限 Refresh API 使用
+        refreshTokenCookie.setMaxAge(0); // 7 天
+        response.addCookie(refreshTokenCookie);
 
+        return ResponseEntity.ok(new MsgDTO("Logout successfully"));
     }
 }

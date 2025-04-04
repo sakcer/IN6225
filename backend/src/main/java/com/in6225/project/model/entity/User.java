@@ -55,7 +55,7 @@ public class User {
     @PrePersist
     public void init() {
         if (StringUtil.isNullOrEmpty(this.password)) {
-            this.password = new BCryptPasswordEncoder().encode("123456");
+            this.password = new BCryptPasswordEncoder().encode(this.employeeId);
         }
         this.joinDate = new Date();
     }

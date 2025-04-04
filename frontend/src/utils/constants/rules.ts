@@ -38,7 +38,7 @@ export const employeeRules: FormRules = {
     { type: 'email', message: '请输入有效的邮箱地址', trigger: ['blur', 'change'] },
   ],
   employeeId: [
-    { required: false, message: '工号不能为空', trigger: 'blur' },
+    { required: true, message: '工号不能为空', trigger: 'blur' },
     { pattern: /^EID_[0-9a-zA-Z]{5}$/, message: '工号必须是5位数字', trigger: 'blur' },
   ],
   role: [

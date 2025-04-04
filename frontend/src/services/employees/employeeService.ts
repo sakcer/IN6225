@@ -1,7 +1,6 @@
 import { API_ENDPOINTS, axiosInstance } from '@/services/utils';
 import type { Employee } from '@/utils/types/employee';
-import { useUserStore} from '@/store/meStore'
-import { USER_ROLES, USER_STATUS } from '@/utils/constants';
+import { USER_STATUS } from '@/utils/constants';
 
 export const employeeService = {
   async getAllEmployees() {
@@ -10,7 +9,6 @@ export const employeeService = {
   },
   async createEmployee(employee: Employee) {
     const { id, ...rest } = employee;
-    rest.type = "userDetailsDTO";
     const response = await axiosInstance.post(API_ENDPOINTS.EMPLOYEES_ADD, rest);
     return response.data;
   },
@@ -26,13 +24,7 @@ export const employeeService = {
   },
 
   async updateEmployee(employee: Employee) {
-    const meStore = useUserStore();
-    const {userInfo: me} = meStore;
-    const data= {...employee};
-    if (me.role === USER_ROLES.ADMIN) {
-      data.type = "userDetailsDTO";
-    }
-    const response = await axiosInstance.put(`${API_ENDPOINTS.EMPLOYEES_UPDATE}/${data.id}`, data);
+    const response = await axiosInstance.put(`${API_ENDPOINTS.EMPLOYEES_UPDATE}/${employee.id}`, employee);
     return response.data;
   },
 

@@ -8,6 +8,7 @@ import com.in6225.project.model.mapper.UserMapper;
 import com.in6225.project.repository.UserRepository;
 import com.in6225.project.security.UserDetailsServiceImpl;
 import com.in6225.project.security.jwt.JwtTokenProvider;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -41,6 +42,9 @@ public class AuthService {
     JwtTokenProvider jwtTokenProvider;
 
     public LoginResponseDTO login(LoginRequestDTO loginRequest) {
+        User user = userRepository.findByEmployeeId(loginRequest.getEmployeeId())
+                .orElseThrow(() -> new EntityNotFoundException("User not found for employeeId: " + loginRequest.getEmployeeId()));
+
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.getEmployeeId(), loginRequest.getPassword())
         );
@@ -52,7 +56,6 @@ public class AuthService {
         String accessToken = jwtTokenProvider.generateAccessToken(authentication);
         String refreshToken = jwtTokenProvider.generateRefreshToken(authentication);
 
-        User user = userRepository.findByEmployeeId(loginRequest.getEmployeeId());
 
         return new LoginResponseDTO(accessToken, refreshToken, userMapper.toUserDetailsDTO(user), user.getRole());
     }

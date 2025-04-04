@@ -11,8 +11,7 @@ export interface Employee {
   role: UserRole;
   status: UserStatus;
   department: string;
-  title: string;
+  title?: string;
   avatar?: string;
   joinDate: string;
-  type?: string;
 }

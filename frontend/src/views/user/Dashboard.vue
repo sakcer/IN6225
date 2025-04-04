@@ -1,50 +1,39 @@
 <template>
   <div class="container mx-auto p-6">
-    <!-- Top information bar -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-      <!-- Time Card -->
-      <el-card shadow="hover" class="bg-gradient-to-r from-blue-500 to-blue-600">
-        <div class="text-white">
-          <div class="text-sm">{{ currentDate }}</div>
-          <div class="text-2xl font-bold">{{ currentTime }}</div>
-          <div class="text-sm">{{ weekDay }}</div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+    <el-card shadow="hover">
+        <div class="flex justify-between items-center">
+          <div>
+            <div class="text-sm text-gray-500">{{ weekDay }}, {{ currentDate }}</div>
+            <div class="text-3xl font-semibold text-gray-800 tracking-wide">{{ currentTime }}</div>
+            <div class="text-sm text-gray-400 mt-1">Have a great day ahead! 🎉</div>
+          </div>
         </div>
       </el-card>
-
-      <!-- Personal Information Card -->
-      <el-card shadow="hover" class="bg-gradient-to-r from-purple-500 to-purple-600">
-        <div class="flex items-center text-white">
-          <el-avatar :size="50" :src="me?.avatar || ''"
-            :style="{ backgroundColor: getAvatarColor(me?.name || '') }">
-            {{ getAvatarText(me?.name || '') }}
+      <el-card shadow="hover">
+        <div class="flex items-center">
+          <el-avatar
+            :size="60"
+            :src="userStore.userInfo.avatar || ''"
+            :style="{ backgroundColor: getAvatarColor(userStore.userInfo.name) }"
+          >
+            {{ getAvatarText(userStore.userInfo.name) }}
           </el-avatar>
-          <div class="ml-4">
-            <div class="text-lg font-bold">{{ me?.name || 'No name' }}</div>
-            <div class="text-sm">{{ me?.role || 'No role' }}</div>
-            <div class="text-sm">{{ me?.department || 'No department' }}</div>
+          <div class="ml-4 space-y-1">
+            <div class="flex items-center gap-3">
+              <div class="text-xl font-semibold text-gray-900">{{ userStore.userInfo.name }}</div>
+              <el-tag :type="userStore.userInfo.status === USER_STATUS.ACTIVE ? 'success' : 'info'" class="text-sm">
+                {{ userStore.userInfo.status }}
+              </el-tag>
+            </div>
+            <div class="text-sm text-gray-600">Title: <span class="font-medium">{{ userStore.userInfo.title || 'N.A.' }}</span></div>
+            <div class="text-sm text-gray-500">Email: <span class="font-medium">{{ userStore.userInfo.email }}</span></div>
           </div>
         </div>
       </el-card>
-
-      <!-- Project Statistics Card -->
-      <!-- <el-card shadow="hover" class="bg-gradient-to-r from-green-500 to-green-600">
-        <div class="text-white">
-          <div class="text-lg font-bold">Project Statistics</div>
-          <div class="flex justify-between mt-2">
-            <div>
-              <div class="text-sm">Participated</div>
-              <div class="text-xl font-bold">{{ myProjects.length }}</div>
-            </div>
-            <div>
-              <div class="text-sm">Managed</div>
-              <div class="text-xl font-bold">{{ managedProjects.length }}</div>
-            </div>
-          </div>
-        </div>
-      </el-card> -->
     </div>
 
-    <!-- Managed Projects -->
     <div class="mb-6">
       <h2 class="text-xl font-bold mb-4">My Projects</h2>
 
@@ -74,9 +63,7 @@
           <div v-for="project in pageProjects" :key="project.id">
             <ProjectCard 
               :project="project"
-              :me="me" as Employee
               @edit-project="handleEditProject"
-              @view-project="handleViewProject"
             />
           </div>
         </template>
@@ -89,9 +76,7 @@
       <div v-else>
         <project-row 
           :projects="pageProjects"
-          :me="me" 
-          @edit-project="handleEditProject" 
-          @view-project="handleViewProject" />
+          @edit-project="handleEditProject" />
       </div>
     </div>
 
@@ -101,8 +86,6 @@
       v-model:dialogVisible="dialogVisible"
       v-model:loading="loading"
       :form="form"
-      :users="users" 
-      :me="me"
       :form-type="formType"
       @close-project="handleClose"
       @submit-project="handleSubmit" />
@@ -110,26 +93,24 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import ProjectCard from '@/components/Project/ProjectCard.vue'
 import ProjectRow from '@/components/Project/ProjectRow.vue'
 import ProjectFormCard from '@/components/Project/ProjectForm.vue'
 import SearchInput from '@/components/SearchInput.vue'
 import StatusToggle from '@/components/StatusToggle.vue'
 import Pagination from '@/components/Pagination.vue'
-import { useUserStore } from '@/store/meStore'
-import { PROJECT_STATUS, PAGE_SIZES } from '@/utils/constants'
+import { useUserStore } from '@/store/userStore'
+import { PROJECT_STATUS, PAGE_SIZES, FORM_TYPES, USER_STATUS } from '@/utils/constants'
 import { getAvatarColor, getAvatarText } from '@/utils/avatar'
 import { projectService } from '@/services/projects/projectService'
 import { ElMessage } from 'element-plus'
 import type { Project } from '@/utils/types/project'
-import type { Employee } from '@/utils/types/employee'
 import { handleAxiosError } from '@/utils/errorMsg'
-import { employeeService } from '@/services/employees/employeeService'
 
 // States
 const dialogVisible = ref(false)
-const formType = ref(0)
+const formType = ref(FORM_TYPES.ADD)
 const form = ref({} as Project)
 const status = ref(PROJECT_STATUS.ALL)
 const currentPage = ref(1)
@@ -148,22 +129,12 @@ const currentTime = ref(new Date().toLocaleTimeString('en-US'))
 const weekDay = ref(['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][new Date().getDay()])
 
 // Core-datas
-const meStore = useUserStore()
-
-const users = ref([] as Employee[])
-const me = computed(() => meStore.userInfo)
-
+const userStore = useUserStore()
 const pageProjects = ref([] as Project[])
 
 const handleEditProject = (project: Project) => {
-  formType.value = 1
-  form.value = project
-  dialogVisible.value = true
-}
-
-const handleViewProject = (project: Project) => {
-  formType.value = 0
-  form.value = project as Project
+  formType.value = FORM_TYPES.EDIT
+  form.value = {...project}
   dialogVisible.value = true
 }
 
@@ -174,15 +145,11 @@ const handleClose = () => {
 const handleSubmit = async (form: Project) => {
   try {
     loading.value = true
-    form.members = form.memberIds.map((id: number) => ({ id: id} as Employee));
     let data;
-    if (formType.value === 1) {
+    if (formType.value === FORM_TYPES.EDIT) {
       data = await projectService.updateProject(form);
-    } else if (formType.value === 3) {
-      data = await projectService.createProject(form);
     } else {
-      ElMessage.error('Add failed');
-      return;
+      data = await projectService.createProject(form);
     }
     refetch()
     setTimeout(() => {
@@ -190,8 +157,7 @@ const handleSubmit = async (form: Project) => {
       dialogVisible.value = false;
     }, 500);
   } catch (error) {
-    ElMessage.error('Add failed');
-    console.log(error);
+    handleAxiosError(error);
   } finally {
     loading.value = false;
   }
@@ -221,12 +187,6 @@ const updateTime = () => {
 onMounted(async () => {
   updateTime()
   setInterval(updateTime, 1000)
-
-  const [employees] = await Promise.all([
-      employeeService.getAllEmployees()
-  ])
-
-  users.value = employees
 
   refetch()
 })

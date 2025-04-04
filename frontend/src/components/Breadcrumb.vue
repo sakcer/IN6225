@@ -7,11 +7,8 @@
   </div>
 </template>
 
-<script setup>
-const props = defineProps({
-  label: {
-    type: String,
-    required: true
-  }
-});
+<script setup lang="ts">
+defineProps<{
+  label: string,
+}>();
 </script>

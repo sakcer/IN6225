@@ -83,15 +83,16 @@
 
 <script setup lang="ts">
 // Import necessary libraries and services
-import { ref, reactive } from 'vue'
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { User, Lock } from '@element-plus/icons-vue'
 import type { FormInstance } from 'element-plus'
 import { authService } from '@/services/auth/authService'
 import { USER_ROLES } from '@/utils/constants'
-import { useUserStore } from '@/store/meStore' 
+import { useUserStore } from '@/store/userStore' 
 import { handleAxiosError } from '@/utils/errorMsg'
+import type { LoginForm } from '@/utils/types/auth'
 
 // Store references
 const meStore = useUserStore()
@@ -100,11 +101,7 @@ const formRef = ref<FormInstance>()
 const loading = ref(false)
 
 // Login form data
-const loginForm = reactive({
-  employeeId: '',
-  password: '',
-  remember: false
-})
+const loginForm = ref({} as LoginForm)
 
 // Form validation rules
 const rules = {
@@ -124,8 +121,7 @@ const handleLogin = async () => {
     await formRef.value.validate()
     loading.value = true
 
-    console.log(loginForm.employeeId, loginForm.password);
-    const response = await authService.login(loginForm.employeeId, loginForm.password);
+    const response = await authService.login(loginForm.value);
 
     // Redirect based on role
     const isAdmin = response.user.role === USER_ROLES.ADMIN

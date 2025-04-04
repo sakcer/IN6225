@@ -1,9 +1,9 @@
 <template>
   <el-container class="layout-container">
     <el-aside width="200px">
-      <el-menu :router="true" class="h-full" default-active="/">
+      <el-menu :router="true" :default-active="$route.path" class="h-full">
 
-        <el-menu-item v-for="route in routes" :key="route.path" :index="route.path">
+        <el-menu-item v-for="route in routes" :key="route.path" :index="(userStore.isAdmin ? '/admin/' : '/employee/') + route.path">
           <el-icon>
             <component :is="route.meta.icon" />
           </el-icon>
@@ -18,10 +18,10 @@
           <h1 class="text-xl font-bold">Enterprise Employee Management System</h1>
           <el-dropdown>
             <span class="flex items-center cursor-pointer">
-              <el-avatar :size="32" :style="{ backgroundColor: getAvatarColor(me?.name || ''), color: '#fff' }">
-                {{ getAvatarText(me?.name || '') }}
+              <el-avatar :size="32" :style="{ backgroundColor: getAvatarColor(userStore.userInfo.name || ''), color: '#fff' }">
+                {{ getAvatarText(userStore.userInfo.name || '') }}
               </el-avatar>
-              <span class="ml-2">{{ me?.name || '' }}</span>
+              <span class="ml-2">{{ userStore.userInfo.name || '' }}</span>
             </span>
             <template #dropdown>
               <el-dropdown-menu>
@@ -44,18 +44,13 @@
 <script setup lang="ts">
 import { adminRoutes, employeeRoutes } from '@/router/index'
 import { getAvatarColor, getAvatarText } from '@/utils/avatar'
-import { useUserStore } from '@/store/meStore'
+import { useUserStore } from '@/store/userStore'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useRouter } from 'vue-router'
-import { USER_ROLES } from '@/utils/constants'
-import { computed } from 'vue'
+import { handleAxiosError } from '@/utils/errorMsg'
 
-const meStore = useUserStore();
-const me = computed(() => meStore.getMe)
-
-const isAdmin =  me.value.role === USER_ROLES.ADMIN
-
-const routes = isAdmin ? adminRoutes[0].children : employeeRoutes[0].children
+const userStore = useUserStore();
+const routes = userStore.isAdmin ? adminRoutes[0].children : employeeRoutes[0].children
 const router = useRouter()
 
 const handleLogout = () => {
@@ -64,17 +59,15 @@ const handleLogout = () => {
     cancelButtonText: 'No',
     type: 'warning'
   }).then(() => {
-    meStore.clearUser()
-    router.push('/login')
+    userStore.logout()
     ElMessage.success('Logout successful')
   }).catch((error) => {
-    console.log(error)
-    ElMessage.info('Logout canceled')
+    handleAxiosError(error)
   })
 }
 
 const handleReturn = () => {
-  if (isAdmin) { 
+  if (userStore.isAdmin) { 
     router.push('/admin/dashboard')
   } else {
     router.push('/employee/dashboard')
@@ -82,12 +75,13 @@ const handleReturn = () => {
 }
 
 const handleProfile = () => {
-  if (isAdmin) {
+  if (userStore.isAdmin) {
     router.push('/admin/profile')
   } else {
     router.push('/employee/profile')
   }
 }
+
 </script>
 
 <style scoped>

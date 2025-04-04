@@ -37,12 +37,12 @@ public class UserController {
 
     @GetMapping("/all")
     public ResponseEntity<?> getAllUsers() {
-        List<?> userResponseDTOSs = userService.getAllUsers();
-        return ResponseEntity.ok(userResponseDTOSs);
+        return ResponseEntity.ok(userService.getAllUsers());
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateUser(@PathVariable Long id, @Valid @RequestBody UserBasicDTO userRequestDTO) {
+    @PreAuthorize("hasRole('ROLE_ADMIN') || #id == authentication.principal.userId")
+    public ResponseEntity<?> updateUser(@PathVariable Long id, @Valid @RequestBody UserDetailsDTO userRequestDTO) {
         userService.updateUser(id, userRequestDTO);
         return ResponseEntity.ok(new MsgDTO("User updated: " + id));
     }

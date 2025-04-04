@@ -1,6 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { useUserStore } from '@/store/meStore'
-import { USER_ROLES } from '@/utils/constants'
+import { useUserStore } from '@/store/userStore'
 
 // Define admin routes
 const adminRoutes = [
@@ -84,35 +83,34 @@ const router = createRouter({
 })
 
 // Navigation guard
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   console.log(to, from);
-  const meStore = useUserStore();
-  const { role, accessToken: token } = meStore;
+  const userStore = useUserStore();
 
-  const isLogin = !!token; // Check if user is logged in
-  const isAdmin = role === USER_ROLES.ADMIN; // Check if user is an admin
-  if (!isLogin && to.path !== '/login') {
-    console.log('Redirecting to login');
-    return next({ path: '/login' }); // Redirect to login if not logged in
+  const isLoggedIn = await userStore.isLoggedIn();
+  const isAdmin = userStore.isAdmin;
+  console.log('isLoggedIn:', isLoggedIn);
+
+  if (!isLoggedIn && to.path !== '/login') {
+    return next({ path: '/login' });
   }
 
   if (to.meta['requiresAdmin'] && !isAdmin) {
     console.log('Admin access required');
-    return next({ path: '/NotFound' }); // Redirect to NotFound if admin access is required
+    return next({ path: '/NotFound' });
   }
 
   if (to.meta['requiresEmployee'] && isAdmin) {
     console.log('Employee access required');
-    return next({ path: '/NotFound' }); // Redirect to NotFound if employee access is required
+    return next({ path: '/NotFound' });
   }
 
-  if (to.path === '/') {
+  if (to.path === '/' || to.path === '/login' && isLoggedIn) {
     console.log('Redirecting based on role');
-    return next({ path: isAdmin ? '/admin/dashboard' : '/employee/dashboard' }); // Redirect based on user role
+    return next({ path: isAdmin ? '/admin/dashboard' : '/employee/dashboard' });
   }
 
-//   console.log('Proceeding to', to.path);
-  next(); // Proceed to the next route
+  next();
 });
 
 // Export the router and routes

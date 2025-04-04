@@ -13,18 +13,4 @@ export interface Project {
   endDate: string;
   leader: Employee;
   members: Employee[];
-  memberIds: number[];
 }
-
-// export interface ProjectForm {
-//   id: number;
-//   name: string;
-//   description: string;
-//   status: ProjectStatus;
-//   progress: number;
-//   startDate: string;
-//   endDate: string;
-//   leader: Employee;
-//   members: Employee[];
-//   memberIds: number[];
-// }

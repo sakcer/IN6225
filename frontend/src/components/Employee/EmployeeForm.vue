@@ -1,5 +1,5 @@
 <template>
-  <el-dialog :title="formType === 1 ? 'Edit Employee' : 'Add Employee'" v-model="dialogVisible" width="600px" @close="handleClose">
+  <el-dialog :title="formType === FORM_TYPES.EDIT ? 'Edit Employee' : 'Add Employee'" v-model="dialogVisible" width="600px" @close="handleClose">
     <el-form ref="formRef" :model="form" label-width="100px" :rules="employeeRules">
 
       <el-row :gutter="20">
@@ -18,7 +18,7 @@
 
       <el-row :gutter="20">
         <el-col :span="12">
-          <el-form-item label="Employee ID" prop="employeeId">
+          <el-form-item label="EID" prop="employeeId">
             <el-input v-model="form.employeeId" placeholder="Enter employee ID" />
           </el-form-item>
         </el-col>
@@ -74,7 +74,7 @@
 
 <script setup lang="ts">
 // Import necessary constants and libraries
-import { USER_ROLES, USER_STATUS, DEPARTMENTS } from '@/utils/constants';
+import { USER_ROLES, USER_STATUS, DEPARTMENTS, FORM_TYPES } from '@/utils/constants';
 import { ref } from 'vue';
 import { employeeRules } from '@/utils/constants/rules';
 import { ElForm } from 'element-plus';
@@ -83,7 +83,7 @@ import type { Employee } from '@/utils/types/employee';
 
 const props = defineProps<{
   form: Employee, // Employee data for the form
-  formType: Number,
+  formType: FORM_TYPES,
 }>();
 
 const dialogVisible = defineModel<boolean>('modelValue', { required: true }) // Dialog visibility state

@@ -30,7 +30,7 @@
 <script setup lang="ts">
 // Import necessary libraries and components
 import { ref, computed, onMounted } from 'vue'
-import { useUserStore } from '@/store/meStore'
+import { useUserStore } from '@/store/userStore'
 import InfoCard from '@/components/Profile/InfoCard.vue'
 import InfoDetails from '@/components/Profile/InfoDetails.vue'
 import InfoForm from '@/components/Profile/InfoForm.vue'

@@ -41,13 +41,10 @@ public class UserService {
         return userMapper.toUserDetailsDTO(user);
     }
 
-    public User getUserByEmployeeId(String EID) {
-        User user = userRepository.findByEmployeeId(EID);
-        if (user == null) {
-            throw new EntityNotFoundException("User not found for employeeId: " + EID);
-        }
-        return user;  // 将 User 转换为 UserResponseDTO
-    }
+//    public User getUserByEmployeeId(String EID) {
+//        return userRepository.findByEmployeeId(EID)
+//                .orElseThrow(() -> new EntityNotFoundException("User not found for employeeId: " + EID));  // 将 User 转换为 UserResponseDTO
+//    }
 
     public Map<String, Object> getEmployeesByFilter(Integer page, Integer size, String sort, String query, User.UserStatus status) {
         String[] sortParams = sort.split(",");
@@ -86,24 +83,25 @@ public class UserService {
         return result;
     }
 
-    public List<Object> getAllUsers() {
+    public Map<String, Object> getAllUsers() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         CustomUserDetails currentUser = (CustomUserDetails) authentication.getPrincipal();
 
-        List<User> users = userRepository.findAll();
+        List<User> users = userRepository.findByRole(User.UserRole.USER);
+        List<User> leaders = userRepository.findByRole(User.UserRole.LEADER);
 
-        if (currentUser.getAuthorities().stream()
-                .noneMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"))) {
-            return users.stream()
-                    .map(userMapper::toUserBasicDTO)
-                    .collect(Collectors.toList());  // 将 List<User> 转换为 List<UserResponseDTO>
-        }
-        return users.stream()
-                .map(userMapper::toUserDetailsDTO)
-                .collect(Collectors.toList());  // 将 List<User> 转换为 List<UserResponseDTO>
+        Map<String, Object> result = new HashMap<>();
+        result.put("users", users.stream().map(userMapper::toUserBasicDTO).toList());
+        result.put("leaders", leaders.stream().map(userMapper::toUserBasicDTO).toList());
+
+        return result;
     }
 
     public void addUser(UserDetailsDTO userRequestDTO) {
+        if (userRepository.findByEmployeeId(userRequestDTO.getEmployeeId()).isPresent()) {
+            throw new IllegalArgumentException("Employee ID already exists.");
+        }
+
         User user = new User();
         userMapper.toUser(user, userRequestDTO);
         userRepository.save(user);
@@ -135,7 +133,7 @@ public class UserService {
         userRepository.deleteById(id);
     }
 
-    public void updateUser(Long id, UserBasicDTO userRequestDTO) {
+    public void updateUser(Long id, UserDetailsDTO userRequestDTO) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         CustomUserDetails currentUser = (CustomUserDetails) authentication.getPrincipal();
 
@@ -143,21 +141,19 @@ public class UserService {
             throw new EntityNotFoundException("User not found for id: " + id);
         }
         User user = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("User not found for id: " + id));
+        if (!user.getEmployeeId().equals(userRequestDTO.getEmployeeId())) {
+            if (userRepository.findByEmployeeId(userRequestDTO.getEmployeeId()).isPresent()) {
+                throw new IllegalArgumentException("Employee ID already exists.");
+            }
+        }
 
         System.out.println(currentUser.getAuthorities());
 
-        if (userRequestDTO instanceof UserDetailsDTO) {
-            if (currentUser.getAuthorities().stream()
-                    .noneMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"))) {
-                throw new SecurityException("Only an admin can update details");
-            }
+        if (currentUser.getAuthorities().stream()
+                .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"))) {
             userMapper.toUser(user, (UserDetailsDTO) userRequestDTO);
         } else {
-            if (!currentUser.getUserId().equals(id) && currentUser.getAuthorities().stream()
-                    .noneMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"))) {
-                throw new SecurityException("Only the user themselves or an admin can update profile");
-            }
-            userMapper.toUser(user, userRequestDTO);
+            userMapper.toUser(user, (UserBasicDTO) userRequestDTO);
         }
 
         userRepository.save(user);

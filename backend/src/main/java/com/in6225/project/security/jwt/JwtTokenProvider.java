@@ -18,7 +18,7 @@ public class JwtTokenProvider {
     private final String SECRET_KEY = "IN6225";
     // private final long EXPIRATION_TIME = 3600 * 1000;
     // private static final long ACCESS_TOKEN_EXPIRATION = 30 * 60 * 1000; // 30min
-    private static final long ACCESS_TOKEN_EXPIRATION = 1 * 1 * 1000; // 30min
+    private static final long ACCESS_TOKEN_EXPIRATION = 30 * 60 * 1000; // 30min
     private static final long REFRESH_TOKEN_EXPIRATION = 7 * 24 * 60 * 60 * 1000; // 7days
 
 //    public String generateToken(Authentication authentication) {
