@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // import { useProjectsStore } from '@/store/projectStore';
 // import { onBeforeMount } from 'vue';
-// import { useUsersStore } from '@/store/userStore';
+// import { useUserStore } from './store/meStore';
 // import { useMeStore } from '@/store/meStore';
 // import { useMyProjectStore } from '@/store/myProjectStore'; 
 
@@ -11,11 +11,10 @@
 // const myProjectStore = useMyProjectStore();
 
 // onBeforeMount(async () => {
-//   await projectsStore.refetchProjects();
-//   await usersStore.refetchUsers();
-//   await meStore.refetchMe();
-//   await myProjectStore.refetchProjects();
-// }`);
+//   const userStore = useUserStore();
+//   await userStore.refreshAccessToken();
+
+// });
 
 </script>
 

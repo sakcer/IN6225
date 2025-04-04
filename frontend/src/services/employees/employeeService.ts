@@ -52,5 +52,6 @@ export const employeeService = {
     }
     const response = await axiosInstance.get(url);
     return response.data;
-  }
+  },
+
 }; 

@@ -87,7 +87,7 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   console.log(to, from);
   const meStore = useUserStore();
-  const { role, token } = meStore;
+  const { role, accessToken: token } = meStore;
 
   const isLogin = !!token; // Check if user is logged in
   const isAdmin = role === USER_ROLES.ADMIN; // Check if user is an admin

@@ -3,12 +3,13 @@ import type { Employee } from '@/utils/types/employee'
 import { employeeService } from '@/services/employees/employeeService'
 import { USER_ROLES } from '@/utils/constants'
 import { handleAxiosError } from '@/utils/errorMsg';
+import { authService } from '@/services/auth/authService';
 
 export const useUserStore = defineStore('me', {
   state: () => ({
     userInfo: {} as Employee,
     role: USER_ROLES.USER,
-    token: null as string | null,
+    accessToken: null as string | null,
   }),
   getters: {
     getMe: (state) => state.userInfo,  // getter 方法
@@ -19,12 +20,12 @@ export const useUserStore = defineStore('me', {
     clearUser() {
       this.userInfo = {} as Employee;
       this.role = USER_ROLES.USER;
-      this.token = null;
+      this.accessToken = null;
     },
     setUser(data: any) {
       this.userInfo = data.user;
       this.role = data.role;
-      this.token = data.token;
+      this.accessToken = data.accessToken;
     },
     async fetchUserInfo() {
       try { 
@@ -35,6 +36,18 @@ export const useUserStore = defineStore('me', {
         handleAxiosError(error)
       }
     },
+    async refreshAccessToken() {
+      try {
+        const res = await authService.refreshAccessToken();
+        console.log(res)
+        this.accessToken = res.message;
+        return res.message;
+      } catch (error) {
+        handleAxiosError(error)
+        this.clearUser()
+        return null
+      }
+    }
   },
-  persist: true,
+  // persist: true,
 });

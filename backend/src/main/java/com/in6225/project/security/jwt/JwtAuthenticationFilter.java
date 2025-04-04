@@ -50,7 +50,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // Get the JWT from the request header
         String token = extractToken(request);
         if (token == null) {
-            handlerExceptionResolver.resolveException(request, response, null, new SecurityException("Token is missing"));
+            handlerExceptionResolver.resolveException(request, response, null, new AuthenticationException("Invalid JWT token") {});
             return;
         }
 
@@ -63,13 +63,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             UsernamePasswordAuthenticationToken authentication =
                     new UsernamePasswordAuthenticationToken(userDetails, null, roles.stream()
-                            .map(SimpleGrantedAuthority::new).collect(Collectors.toList()));
+                            .map(SimpleGrantedAuthority::new).toList());
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
         } catch (Exception e) {
-            System.out.println(e);
-            handlerExceptionResolver.resolveException(request, response, null, new SecurityException("Invalid JWT token"));
+            handlerExceptionResolver.resolveException(request, response, null, new AuthenticationException("Invalid JWT token") {});
             return;
         }
 

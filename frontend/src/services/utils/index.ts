@@ -1,18 +1,3 @@
-// export const API_ENDPOINTS = {
-//   EMPLOYEES: '/api/employee',
-//   EMPLOYEES_ALL: '/api/employee/all',
-//   EMPLOYEES_UPDATE: '/api/employee',
-//   EMPLOYEES_ADD: '/api/employee',
-//   EMPLOYEES_DELETE: '/api/employee',
-//   EMPLOYEES_UPDATE_PASSWORD: '/api/employees/password',
-//   PROJECTS: '/api/project',
-//   PROJECTS_ALL: '/api/project/all',
-//   PROJECTS_UPDATE: '/api/project',
-//   PROJECTS_ADD: '/api/project',
-//   PROJECTS_DELETE: '/api/project',
-//   LOGIN: '/api/auth/login',
-// } as const; 
-
 export const API_ENDPOINTS = {
   EMPLOYEES: '/employee',
   EMPLOYEES_ALL: '/employee/all',
@@ -28,6 +13,7 @@ export const API_ENDPOINTS = {
   PROJECTS_DELETE: '/project',
   PROJECTS_ALL_ME: '/project/all/me',
   LOGIN: '/api/auth/login',
+  REFRESH_TOKEN: '/api/auth/refresh',
   STATS_OVERVIEW: '/stats/overview',
   STATS_DEPARTMENTS_DIST: '/stats/departments/distribution',
   STATS_EMPLOYEES_TREND: '/stats/employees/trend',
@@ -36,30 +22,46 @@ export const API_ENDPOINTS = {
 
 import axios from 'axios';
 import { useUserStore } from '@/store/meStore'
+import { handleAxiosError } from '@/utils/errorMsg';
 
 export const axiosInstance = axios.create({
-  baseURL: '/api', // 根据需要设置 baseURL
+  baseURL: '/api',
+  withCredentials: true,
 });
 
 
 axiosInstance.interceptors.request.use(
   (config) => {
-    const meStore = useUserStore();
-    const {token} = meStore;
-
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    const userStore = useUserStore();
+    if (userStore.accessToken) {
+      config.headers.Authorization = `Bearer ${userStore.accessToken}`;
     }
     return config;
   },
   (error) => Promise.reject(error)
 );
 
-// axiosInstance.interceptors.response.use(
-//   (response) => response,
-//   (error) => {
-//     return Promise.reject(error);
-//   }
-// );
+axiosInstance.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const userStore = useUserStore();
+
+    if (error.response?.status === 401) {
+      try {
+        const newAccessToken = await userStore.refreshAccessToken();
+        if (newAccessToken) {
+          error.config.headers.Authorization = `Bearer ${newAccessToken}`;
+          return axiosInstance.request(error.config);
+        }
+      } catch (error) {
+        handleAxiosError(error);
+        userStore.clearUser();
+        return Promise.reject(error);
+      }
+    } 
+
+    return Promise.reject(error);
+  }
+);
 
 // export default axiosInstance;

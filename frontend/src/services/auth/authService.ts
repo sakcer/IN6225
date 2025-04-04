@@ -11,4 +11,8 @@ export const authService = {
 
     return response.data;
   },
+  async refreshAccessToken() {
+    const response = await axios.post(API_ENDPOINTS.REFRESH_TOKEN, null, {withCredentials: true});
+    return response.data;
+  },
 }; 

@@ -15,22 +15,51 @@ import java.util.stream.Collectors;
 @Component
 public class JwtTokenProvider {
 
-    private final String SECRET = "IN6225";
-    private final long EXPIRATION_TIME = 3600 * 1000;
+    private final String SECRET_KEY = "IN6225";
+    // private final long EXPIRATION_TIME = 3600 * 1000;
+    // private static final long ACCESS_TOKEN_EXPIRATION = 30 * 60 * 1000; // 30min
+    private static final long ACCESS_TOKEN_EXPIRATION = 1 * 1 * 1000; // 30min
+    private static final long REFRESH_TOKEN_EXPIRATION = 7 * 24 * 60 * 60 * 1000; // 7days
 
-    public String generateToken(Authentication authentication) {
+//    public String generateToken(Authentication authentication) {
+//        String username = authentication.getName();
+//        List<String> roles = authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList());
+//        return JWT.create()
+//                .withSubject(username)
+//                .withClaim("roles", roles)
+//                .withExpiresAt(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
+//                .sign(Algorithm.HMAC512(SECRET));
+//    }
+
+    // 生成 Access Token
+    public String generateAccessToken(Authentication authentication) {
         String username = authentication.getName();
-        List<String> roles = authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList());
+        List<String> roles = authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .toList();
+
         return JWT.create()
                 .withSubject(username)
+                .withExpiresAt(new Date(System.currentTimeMillis() + ACCESS_TOKEN_EXPIRATION))
                 .withClaim("roles", roles)
-                .withExpiresAt(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
-                .sign(Algorithm.HMAC512(SECRET));
+                .sign(Algorithm.HMAC512(SECRET_KEY));
     }
 
-    public DecodedJWT verifyToken(String token) {
-        JWTVerifier verifier = JWT.require(Algorithm.HMAC512(SECRET)).build();
+    public String generateRefreshToken(Authentication authentication) {
+        String username = authentication.getName();
+        return JWT.create()
+                .withSubject(username)
+                .withExpiresAt(new Date(System.currentTimeMillis() + REFRESH_TOKEN_EXPIRATION))
+                .sign(Algorithm.HMAC512(SECRET_KEY));
+    }
 
+
+    public DecodedJWT verifyToken(String token) {
+        JWTVerifier verifier = JWT.require(Algorithm.HMAC512(SECRET_KEY)).build();
         return verifier.verify(token);
+    }
+
+    public String getUsernameFromToken(String token) {
+        return JWT.decode(token).getSubject();
     }
 }
