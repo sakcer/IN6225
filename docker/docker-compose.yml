@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  frontend:
+    image: sakcer/in6225-frontend
+    container_name: in6225-frontend
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://in6225-backend:8080/api/v1
+    networks:
+      - in6225-network
+
+  backend:
+    image: sakcer/in6225-backend
+    container_name: in6225-backend
+    ports:
+      - "8080:8080"
+    networks:
+      - in6225-network
+    depends_on:
+      - mysql
+    # entrypoint: ["bash", "-c", "sleep 30 && java -jar /app/app.jar"]
+    # entrypoint: ["bash", "-c", "until mysqladmin ping -h in6225-mysql -u root -proot --silent; do echo 'Waiting for MySQL to be alive...'; sleep 1; done; java -jar /app/app.jar"]
+
+  mysql:
+    image: sakcer/in6225-mysql
+    container_name: in6225-mysql
+    ports:
+      - "3306:3306"
+    networks:
+      - in6225-network
+
+networks:
+  in6225-network:
+    driver: bridge

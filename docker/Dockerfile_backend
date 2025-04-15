@@ -1,0 +1,22 @@
+FROM openjdk:24-ea-21-slim
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends default-mysql-client && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+COPY ./in6225.jar /app/app.jar
+COPY ./application.properties /app/application.properties
+
+ENTRYPOINT ["bash", "-c", "\
+until mysqladmin ping -h in6225-mysql -u root -proot --silent; \
+do \
+  echo 'MySQL not ready. Waiting 10 seconds...'; \
+  sleep 10; \
+done; \
+echo 'MySQL is up! Starting app...'; \
+java -jar /app/app.jar"]
+
+EXPOSE 8080
