@@ -10,9 +10,4 @@ import java.util.Map;
 @AllArgsConstructor
 public class DepartmentDistDTO {
     private List<Map<String, Object>> departments;
-
-//    private static class DepartmentDTO {
-//        User.Department department;
-//        Integer value;
-//    }
 }

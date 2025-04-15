@@ -21,19 +21,7 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequestDTO loginRequest, HttpServletResponse response) {
-        LoginResponseDTO lg = authService.login(loginRequest);
-
-        Cookie refreshTokenCookie = new Cookie("refreshToken", lg.getRefreshToken());
-        refreshTokenCookie.setHttpOnly(true); // 前端无法访问
-         refreshTokenCookie.setSecure(true);  // 仅 HTTPS 传输（生产环境必须开启）
-        refreshTokenCookie.setPath("/api/auth/refresh"); // 仅限 Refresh API 使用
-        if (loginRequest.getRemember()) {
-            refreshTokenCookie.setMaxAge(7 * 24 * 60 * 60); // 7 天
-        } else {
-            refreshTokenCookie.setMaxAge(-1);
-        }
-        response.addCookie(refreshTokenCookie);
-
+        LoginResponseDTO lg = authService.login(loginRequest, response);
         return ResponseEntity.ok(lg);
 
     }
@@ -52,12 +40,8 @@ public class AuthController {
 
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletResponse response) {
-        Cookie refreshTokenCookie = new Cookie("refreshToken", "");
-        refreshTokenCookie.setHttpOnly(true); // 前端无法访问
-        refreshTokenCookie.setSecure(true);  // 仅 HTTPS 传输（生产环境必须开启）
-        refreshTokenCookie.setPath("/api/auth/refresh"); // 仅限 Refresh API 使用
-        refreshTokenCookie.setMaxAge(0); // 7 天
-        response.addCookie(refreshTokenCookie);
+        String cookieString = "refreshToken=; Path=/api/v1/auth; HttpOnly; Max-Age=0";
+        response.setHeader("Set-Cookie", cookieString);
 
         return ResponseEntity.ok(new MsgDTO("Logout successfully"));
     }

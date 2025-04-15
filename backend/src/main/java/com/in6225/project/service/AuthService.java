@@ -41,7 +41,7 @@ public class AuthService {
     @Autowired
     JwtTokenProvider jwtTokenProvider;
 
-    public LoginResponseDTO login(LoginRequestDTO loginRequest) {
+    public LoginResponseDTO login(LoginRequestDTO loginRequest, HttpServletResponse response) {
         User user = userRepository.findByEmployeeId(loginRequest.getEmployeeId())
                 .orElseThrow(() -> new EntityNotFoundException("User not found for employeeId: " + loginRequest.getEmployeeId()));
 
@@ -54,10 +54,17 @@ public class AuthService {
 
         // generate Access Token & Refresh Token
         String accessToken = jwtTokenProvider.generateAccessToken(authentication);
+
         String refreshToken = jwtTokenProvider.generateRefreshToken(authentication);
+        long maxAge = loginRequest.getRemember() ? 7 * 24 * 60 * 60 : -1;
+        String cookie = String.format(
+                "refreshToken=%s; Path=/api/v1/auth; HttpOnly%s",
+                refreshToken,
+                maxAge > 0 ? "; Max-Age=" + maxAge : ""
+        );
+        response.setHeader("Set-Cookie", cookie);
 
-
-        return new LoginResponseDTO(accessToken, refreshToken, userMapper.toUserDetailsDTO(user), user.getRole());
+        return new LoginResponseDTO(accessToken,userMapper.toUserDetailsDTO(user), user.getRole());
     }
 
     public MsgDTO refreshAccessToken(String refreshToken) {

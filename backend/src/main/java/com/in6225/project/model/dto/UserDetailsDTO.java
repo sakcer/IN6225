@@ -16,13 +16,13 @@ public class UserDetailsDTO extends UserBasicDTO {
     @NotEmpty(message = "Employee ID is required")
     private String employeeId;
 
-    @NotNull(message = "Role is required")  // 使用 @NotNull 而不是 @NotEmpty
+    @NotNull(message = "Role is required")
     private User.UserRole role;
 
-    @NotNull(message = "Status is required")  // 使用 @NotNull 而不是 @NotEmpty
+    @NotNull(message = "Status is required")
     private User.UserStatus status;
 
-    @NotNull(message = "Department is required")  // 使用 @NotNull 而不是 @NotEmpty
+    @NotNull(message = "Department is required")
     private User.Department department;
 
     private Date joinDate;

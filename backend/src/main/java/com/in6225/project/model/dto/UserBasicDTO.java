@@ -8,11 +8,6 @@ import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
 
 @Data
-//@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type", include = JsonTypeInfo.As.EXISTING_PROPERTY, defaultImpl = UserBasicDTO.class)
-//@JsonSubTypes({
-//        @JsonSubTypes.Type(value = UserDetailsDTO.class, name = "userDetailsDTO")
-//})
-//@JsonIgnoreProperties("type")
 @JsonSubTypes({
         @JsonSubTypes.Type(value = UserDetailsDTO.class)
 })

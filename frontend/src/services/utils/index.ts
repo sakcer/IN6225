@@ -1,23 +1,20 @@
+const API_URL = import.meta.env['VITE_API_URL']
+
 export const API_ENDPOINTS = {
-  EMPLOYEES: '/employee',
-  EMPLOYEES_ALL: '/employee/all',
-  EMPLOYEES_UPDATE: '/employee',
-  EMPLOYEES_ADD: '/employee',
-  EMPLOYEES_DELETE: '/employee',
-  EMPLOYEES_ME: '/employee/me',
-  EMPLOYEES_UPDATE_PASSWORD: '/employees/password',
-  PROJECTS: '/project',
-  PROJECTS_ALL: '/project/all',
-  PROJECTS_UPDATE: '/project',
-  PROJECTS_ADD: '/project',
-  PROJECTS_DELETE: '/project',
-  PROJECTS_ALL_ME: '/project/all/me',
-  LOGIN: '/api/auth/login',
-  LOGOUT: '/api/auth/logout',
-  REFRESH_TOKEN: '/api/auth/refresh',
+  // for employees
+  EMPLOYEES: '/employees',
+  EMPLOYEES_ALL: '/employees/all',
+  EMPLOYEES_ME: '/employees/me',
+  // for projects
+  PROJECTS: '/projects',
+  // for statistics
   STATS_OVERVIEW: '/stats/overview',
   STATS_DEPARTMENTS_DIST: '/stats/departments/distribution',
   STATS_EMPLOYEES_TREND: '/stats/employees/trend',
+  // for Authentication
+  LOGIN: API_URL + '/auth/login',
+  LOGOUT: API_URL + '/auth/logout',
+  REFRESH_TOKEN: API_URL + '/auth/refresh',
 } as const;
 
 
@@ -26,8 +23,8 @@ import { useUserStore } from '@/store/userStore'
 import { handleAxiosError } from '@/utils/errorMsg';
 
 export const axiosInstance = axios.create({
-  baseURL: '/api',
-  withCredentials: true,
+  baseURL: API_URL,
+  // withCredentials: true,
 });
 
 
@@ -59,7 +56,7 @@ axiosInstance.interceptors.response.use(
         userStore.clearUser();
         return Promise.reject(error);
       }
-    } 
+    }
 
     return Promise.reject(error);
   }

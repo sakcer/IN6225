@@ -92,7 +92,7 @@ onMounted(async () => {
     const chart = echarts.init(trendChartRef.value)
     chart.setOption({
       tooltip: { trigger: 'axis' },
-      xAxis: { type: 'category', data: employeeTrend.trendData },
+      xAxis: { type: 'category', data: employeeTrend.dates },
       yAxis: { type: 'value' },
       series: [{ name: 'Join Count', type: 'line', data: employeeTrend.joinCounts }]
     })

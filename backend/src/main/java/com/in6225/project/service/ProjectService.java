@@ -90,15 +90,18 @@ public class ProjectService {
 
         Specification<Project> spec = Specification.where(null);
 
-        if (currentUser.getAuthorities().stream()
-                .noneMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"))) {
-
-            spec = spec.and((root, criteriaQuery, cb) -> {
-                Join<Project, User> membersJoin = root.join("members", JoinType.LEFT);
-                Predicate memberCondition = cb.equal(membersJoin.get("id"), currentUser.getUserId());
-                Predicate leaderCondition = cb.equal(root.get("leader").get("id"), currentUser.getUserId());
-                return cb.and(cb.or(memberCondition, leaderCondition));
-            });
+        if (currentUser.getAuthorities().stream().noneMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"))) {
+            if (currentUser.getAuthorities().stream()
+                    .noneMatch(auth -> auth.getAuthority().equals("ROLE_LEADER"))) {
+                spec = spec.and((root, criteriaQuery, cb) -> {
+                    Join<Project, User> membersJoin = root.join("members", JoinType.LEFT);
+                    return cb.equal(membersJoin.get("id"), currentUser.getUserId());
+                });
+            } else {
+                spec = spec.and((root, criteriaQuery, cb) -> {
+                    return cb.equal(root.get("leader").get("id"), currentUser.getUserId());
+                });
+            }
         }
 
         if (query != null && !query.isEmpty()) {
@@ -116,16 +119,14 @@ public class ProjectService {
 
 
         Page<Project> projectPage = projectRepository.findAll(spec, pageable);
-        System.out.println(currentUser.getUserId());
-        System.out.println(projectPage);
 
-        List<ProjectDTO> userDetailsDTOS = projectPage.stream()
+        List<ProjectDTO> projectDTOs = projectPage.stream()
                 .map(projectMapper::toProjectDTO)
                 .toList();
 
         Map<String, Object> result = new HashMap<>();
         result.put("total", projectPage.getTotalElements());
-        result.put("projects", userDetailsDTOS);
+        result.put("projects", projectDTOs);
         return result;
     }
 }

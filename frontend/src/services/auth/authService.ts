@@ -1,12 +1,11 @@
-import axios from 'axios';
 import { API_ENDPOINTS } from '@/services/utils';
 import { useUserStore } from '@/store/userStore';
 import type { LoginForm } from '@/utils/types/auth';
+import axios from 'axios';
 
 export const authService = {
   async login(loginForm: LoginForm) {
-    const response = await axios.post(API_ENDPOINTS.LOGIN, loginForm);
-
+    const response = await axios.post(API_ENDPOINTS.LOGIN, loginForm, {withCredentials: true});
     const meStore = useUserStore();
     meStore.setUser(response.data);
 

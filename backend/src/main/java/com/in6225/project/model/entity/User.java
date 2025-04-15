@@ -11,9 +11,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import java.util.*;
 
 @Entity
-@Table(name = "users")
 @Data
-@DynamicUpdate
+//@DynamicUpdate
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -55,10 +54,9 @@ public class User {
     @PrePersist
     public void init() {
         if (StringUtil.isNullOrEmpty(this.password)) {
-            this.password = new BCryptPasswordEncoder().encode(this.employeeId);
+            this.password = new BCryptPasswordEncoder().encode("123456");
         }
         this.joinDate = new Date();
     }
 
 }
-

@@ -15,7 +15,7 @@
     <el-container>
       <el-header>
         <div class="flex justify-between items-center h-full">
-          <h1 class="text-xl font-bold">Enterprise Employee Management System</h1>
+          <h1 class="text-xl font-bold">Enterprise Management System</h1>
           <el-dropdown>
             <span class="flex items-center cursor-pointer">
               <el-avatar :size="32" :style="{ backgroundColor: getAvatarColor(userStore.userInfo.name || ''), color: '#fff' }">

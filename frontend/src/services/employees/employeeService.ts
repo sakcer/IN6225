@@ -9,7 +9,7 @@ export const employeeService = {
   },
   async createEmployee(employee: Employee) {
     const { id, ...rest } = employee;
-    const response = await axiosInstance.post(API_ENDPOINTS.EMPLOYEES_ADD, rest);
+    const response = await axiosInstance.post(API_ENDPOINTS.EMPLOYEES, rest);
     return response.data;
   },
 
@@ -24,13 +24,13 @@ export const employeeService = {
   },
 
   async updateEmployee(employee: Employee) {
-    const response = await axiosInstance.put(`${API_ENDPOINTS.EMPLOYEES_UPDATE}/${employee.id}`, employee);
+    const response = await axiosInstance.put(`${API_ENDPOINTS.EMPLOYEES}/${employee.id}`, employee);
     return response.data;
   },
 
   async updateEmployeePassword(id: number, password: Object) {
     console.log(password, id);
-    const response = await axiosInstance.put(`${API_ENDPOINTS.EMPLOYEES_UPDATE}/${id}/password`, password);
+    const response = await axiosInstance.put(`${API_ENDPOINTS.EMPLOYEES}/${id}/password`, password);
     return response.data;
   },
 

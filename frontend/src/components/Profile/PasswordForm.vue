@@ -21,7 +21,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { ElForm, ElFormItem, ElInput, ElButton, ElDialog } from 'element-plus';
-import { ElMessage } from 'element-plus';
 import { passwordRules } from '@/utils/constants/rules';
 
 const dialogVisible = defineModel<boolean>('modelValue', { required: true })
@@ -43,11 +42,10 @@ const cancelPasswordChange = () => {
 
 const submitPasswordChange = async () => {
     console.log('Password data:', passwordData.value)
-    passwordFormRef.value?.validate().then(() => {
+    passwordFormRef.value?.validate((valid) => {
+        if (valid) {
         emit('save-password', passwordData.value)
-    }).catch((error) => {
-        console.log('Password change failed:', error)
-        ElMessage.error('Password change failed')
+        }
     })
 }
 

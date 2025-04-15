@@ -7,7 +7,6 @@ import lombok.Data;
 import java.util.*;
 
 @Entity
-@Table(name = "projects")
 @Data
 public class Project {
     @Id
