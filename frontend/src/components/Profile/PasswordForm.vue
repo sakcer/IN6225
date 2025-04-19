@@ -1,6 +1,6 @@
 <template>
     <el-dialog v-model="dialogVisible" title="Change Password" width="400px" @close="cancelPasswordChange">
-        <el-form ref="passwordFormRef" :model="passwordData" :rules="passwordRules">
+        <el-form ref="passwordFormRef" :model="passwordData" :rules="passwordRules" label-width="160px">
             <el-form-item label="Current Password" prop="currentPassword">
                 <el-input v-model="passwordData.currentPassword" type="password" show-password />
             </el-form-item>

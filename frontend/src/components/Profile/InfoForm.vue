@@ -1,5 +1,5 @@
 <template>
-    <el-dialog v-model="dialogVisible" title="Edit Personal Information" width="50%" @close="handleCancel">
+    <el-dialog v-model="dialogVisible" title="Edit Personal Information" width="400px" @close="handleCancel">
       <el-form ref="formRef" :model="form" :rules="infoRules" label-width="100px">
         <!-- <el-form-item label="头像">
           <el-upload

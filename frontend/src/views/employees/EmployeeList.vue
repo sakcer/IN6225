@@ -1,9 +1,9 @@
 <template>
   <div>
     <!-- Breadcrumb navigation -->
-    <Breadcrumb label="Users" />
+    <Breadcrumb label="Employees" />
 
-    <h1 class="text-3xl font-bold mb-6">Users Panel</h1>
+    <h1 class="text-3xl font-bold mb-6">Employees</h1>
 
     <!-- Statistics cards -->
     <el-row :gutter="20" class="mb-6">
@@ -24,7 +24,7 @@
           </div>
         </div>
         <div class="flex justify-end">
-          <add-button button-text="Add User" @add="handleAddEmployee" />
+          <add-button button-text="Add Employee" @add="handleAddEmployee" />
         </div>
       </div>
 

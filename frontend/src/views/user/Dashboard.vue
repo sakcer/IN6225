@@ -153,7 +153,7 @@ const handleSubmit = async (form: Project) => {
     }
     refetch()
     setTimeout(() => {
-      ElMessage.success('Project [' + data.id + '] added successfully');
+      ElMessage.success(data.message);
       dialogVisible.value = false;
     }, 500);
   } catch (error) {

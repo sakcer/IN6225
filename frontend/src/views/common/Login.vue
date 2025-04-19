@@ -4,7 +4,7 @@
       <!-- Logo and Title -->
       <div class="text-center mb-8">
         <img src="@/assets/vue.svg" alt="Logo" class="mx-auto h-12 mb-4" />
-        <h1 class="text-2xl font-bold text-gray-800">Employee Management System</h1>
+        <h1 class="text-2xl font-bold text-gray-800">Enterprise Management System</h1>
         <p class="text-gray-500 mt-2">Welcome back, please log in to your account</p>
       </div>
 
@@ -63,7 +63,7 @@
 
         <!-- Hint Information -->
         <div class="text-center text-sm text-gray-500 space-y-2">
-          <p>For first-time login, please use your Employee ID as the username and initial password</p>
+          <p>For first-time login, please use 123456 as initial password</p>
           <p>
             Having issues? Please contact
             <el-button type="primary" link class="px-0" @click="handleContact">System Administrator</el-button>
@@ -75,7 +75,7 @@
     <!-- Footer -->
     <div class="mt-8 text-center">
       <p class="text-gray-500 text-sm">
-        © {{ new Date().getFullYear() }} Employee Management System. All rights reserved.
+        © {{ new Date().getFullYear() }} Enterprise Management System. All rights reserved.
       </p>
     </div>
   </div>
